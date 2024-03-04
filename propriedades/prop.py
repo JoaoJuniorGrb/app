@@ -70,9 +70,9 @@ if applicativo == "Propriedades Termodinâmicas":
 
 if applicativo == "Final":
     diretorio = Path(__file__).parent if "__file__" in locals() else Path.cdw()
-    arqivo_css = /mount/src/app/propriedades/styles/main.css
-    arqivo_pdf = /mount/src/app/propriedades/assets/Curriculo.pdfpropriedades/assets/Curriculo.pdf
-    arqivo_img = /mount/src/app/propriedades/assets/foto_.jpg
+    arqivo_css = mount/src/app/propriedades/styles/main.css
+    arqivo_pdf = mount/src/app/propriedades/assets/Curriculo.pdfpropriedades/assets/Curriculo.pdf
+    arqivo_img = mount/src/app/propriedades/assets/foto_.jpg
     titulo = "Curriculum | João Ferreira Junior"
     nome = "João Ferreira Junior"
     descrição = "Engenheiro de Energia, Pós graduação em Automação e controle de processos Conhecimento em Python e microcontroladores"
