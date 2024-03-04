@@ -69,7 +69,6 @@ if applicativo == "Propriedades Termodinâmicas":
 
 
 if applicativo == "Final":
-    diretorio = Path(__file__).parent if "__file__" in locals() else Path.cdw()
     arqivo_css = 'https://github.com/JoaoJuniorGrb/app/blob/4ef7f6d97028d111ca7ddc34ff1a2e6c6e9b0a3f/propriedades/styles/main.css'
     arqivo_pdf = 'https://github.com/JoaoJuniorGrb/app/blob/4ef7f6d97028d111ca7ddc34ff1a2e6c6e9b0a3f/propriedades/assets/Curriculo.pdf'
     arqivo_img = 'https://github.com/JoaoJuniorGrb/app/blob/4ef7f6d97028d111ca7ddc34ff1a2e6c6e9b0a3f/propriedades/assets/Foto_.jpg'
