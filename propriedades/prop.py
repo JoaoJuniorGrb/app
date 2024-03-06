@@ -88,7 +88,7 @@ if applicativo == "Final":
     #with open(arqivo_css) as c:
     #   st.markdown("<style>{}</style>".format(c.read()), unsafe_allow_html=True)
    
-    pdfleitura = arquivo_pdf
+    
     imagem = Image.open(arqivo_img)
 
     col1, col2 = st.columns(2, gap="small")
