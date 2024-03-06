@@ -79,7 +79,7 @@ if applicativo == "Final":
     descrição = "Engenheiro de Energia, Pós graduação em Automação e controle de processos Conhecimento em Python e microcontroladores"
     st.title('Desenvolvido por',nome)
     # Fazer o download da imagem
-    response = requests.get(url_da_imagem)
+    response = requests.get(arqivo_img)
     if response.status_code == 200:
         # Abrir a imagem a partir do conteúdo binário
         img = Image.open(BytesIO(response.content))
