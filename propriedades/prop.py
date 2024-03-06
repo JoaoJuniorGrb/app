@@ -81,8 +81,8 @@ if applicativo == "Final":
     # Fazer o download da imagem
     response = requests.get(url_da_imagem)
     if response.status_code == 200:
-    # Abrir a imagem a partir do conteúdo binário
-    img = Image.open(BytesIO(response.content))
+        # Abrir a imagem a partir do conteúdo binário
+        img = Image.open(BytesIO(response.content))
     
     email = "joaojunior.grb@hotmail.com"
     midia_social = {"LinkedIn": "https://www.linkedin.com/in/jo%C3%A3o-ferreira-junior-b2698163/?lipi=urn%3Ali%3Apage%3Ad_flagship3_feed%3BAjwOn5KcRhmkdM6UuXiVjw%3D%3D"}
