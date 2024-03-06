@@ -87,8 +87,8 @@ if applicativo == "Final":
     # carregando assets
     #with open(arqivo_css) as c:
     #   st.markdown("<style>{}</style>".format(c.read()), unsafe_allow_html=True)
-    with open(arqivo_pdf, "rb") as arquivo_pdf:
-        pdfleitura = arquivo_pdf.read()
+   
+    pdfleitura = arquivo_pdf.read()
     imagem = Image.open(arqivo_img)
 
     col1, col2 = st.columns(2, gap="small")
