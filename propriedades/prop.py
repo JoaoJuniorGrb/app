@@ -3,6 +3,8 @@ import CoolProp.CoolProp as prop
 from CoolProp.CoolProp import PropsSI,PhaseSI
 from pathlib import Path
 from PIL import Image
+import requests
+from io import BytesIO
 
 #Inicial
 programas = ["Propriedades Termodinâmicas","Final"]
@@ -76,7 +78,12 @@ if applicativo == "Final":
     nome = "João Ferreira Junior"
     descrição = "Engenheiro de Energia, Pós graduação em Automação e controle de processos Conhecimento em Python e microcontroladores"
     st.title('Desenvolvido por',nome)
-
+    # Fazer o download da imagem
+    response = requests.get(url_da_imagem)
+    if response.status_code == 200:
+    # Abrir a imagem a partir do conteúdo binário
+    img = Image.open(BytesIO(response.content))
+    
     email = "joaojunior.grb@hotmail.com"
     midia_social = {"LinkedIn": "https://www.linkedin.com/in/jo%C3%A3o-ferreira-junior-b2698163/?lipi=urn%3Ali%3Apage%3Ad_flagship3_feed%3BAjwOn5KcRhmkdM6UuXiVjw%3D%3D"}
 
@@ -89,7 +96,7 @@ if applicativo == "Final":
     col1, col2 = st.columns(2, gap="small")
 
     with col1:
-        st.image(arqivo_img,width=250)
+        st.image(img,width=250)
 
     with col2:
         st.title(nome,anchor=False)
