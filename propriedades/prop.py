@@ -71,7 +71,7 @@ if applicativo == "Propriedades Termodinâmicas":
 if applicativo == "Final":
     arqivo_css = 'https://github.com/JoaoJuniorGrb/app/blob/4ef7f6d97028d111ca7ddc34ff1a2e6c6e9b0a3f/propriedades/styles/main.css'
     arqivo_pdf = 'https://github.com/JoaoJuniorGrb/app/blob/4ef7f6d97028d111ca7ddc34ff1a2e6c6e9b0a3f/propriedades/assets/Curriculo.pdf'
-    arqivo_img = 'https://github.com/JoaoJuniorGrb/app/blob/9f437ab67b69604f8f48ead96048c99ab7014eb7/propriedades/assets/Foto_.jpg'
+    arqivo_img = 'https://github.com/JoaoJuniorGrb/appestreamlit/blob/624cf41fb2c6bc7152359344c6d0b29f264228e1/Foto_.jpg'
     titulo = "Curriculum | João Ferreira Junior"
     nome = "João Ferreira Junior"
     descrição = "Engenheiro de Energia, Pós graduação em Automação e controle de processos Conhecimento em Python e microcontroladores"
