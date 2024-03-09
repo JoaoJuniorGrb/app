@@ -6,6 +6,7 @@ from PIL import Image
 import pandas as pd
 import numpy as np
 from io import BytesIO
+import requests
 
 #Inicial
 programas = ["Propriedades Termodinâmicas","Final"]
