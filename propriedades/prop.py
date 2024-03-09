@@ -5,6 +5,7 @@ from pathlib import Path
 from PIL import Image
 import pandas as pd
 import numpy as np
+from io import BytesIO
 
 #Inicial
 programas = ["Propriedades Termodinâmicas","Final"]
@@ -119,7 +120,7 @@ if applicativo == "Final":
     col1, col2 = st.columns(2, gap="small")
 
     with col1:
-        st.image(arqivo_img,width=250)
+        st.image(img,width=250)
 
     with col2:
         st.title(nome,anchor=False)
