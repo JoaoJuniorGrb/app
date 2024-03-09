@@ -43,7 +43,7 @@ if applicativo == "Propriedades Termodinâmicas":
             un_pressão = st.selectbox("Un",["MCA","Bar","Pa"],index=1)
         with col4:
             st.header("Temp.",anchor=False)
-            temperatura = st.number_input("Digite a temperatura", min_value=0.1,step=1,format="%.1f")
+            temperatura = st.number_input("Digite a temperatura", min_value=0.1,step=0.1,format="%.1f")
         with col5:
             st.header("Un.", anchor=False)
             un_temperatura = st.selectbox("Un.", ["°C", "K"])
