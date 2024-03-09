@@ -3,8 +3,8 @@ import CoolProp.CoolProp as prop
 from CoolProp.CoolProp import PropsSI,PhaseSI
 from pathlib import Path
 from PIL import Image
-import requests
-from io import BytesIO
+import pandas as pd
+import numpy as np
 
 #Inicial
 programas = ["Propriedades Termodinâmicas","Final"]
@@ -18,23 +18,23 @@ if applicativo == "Propriedades Termodinâmicas":
     biblioteca_prop = st.selectbox("Selecione o metodo de Pesquisa",["CoolProp","Cantera","ThermoPy"])
     if biblioteca_prop == "CoolProp":
         dicionario_propriedades = [
-                {'Viscosidade': 'VISCOSITY'},
-                {'Densidade': 'D'},
-                {'Entalpia': 'H'},
-                {'Entropia': 'S'},
-                {'Qualidade (fração mássica)': 'Q'},
-                {'Energia interna': 'U'},
-                {'Calor específico a pressão constante': 'C'},
-                {'Velocidade do som': 'V'},
-                {'Condutividade térmica': 'CONDUCTIVITY'}
-            ]
+            {'Viscosidade': 'VISCOSITY'},
+            {'Densidade': 'D'},
+            {'Entalpia': 'H'},
+            {'Entropia': 'S'},
+            {'Qualidade (fração mássica)': 'Q'},
+            {'Energia interna': 'U'},
+            {'Calor específico a pressão constante': 'C'},
+            {'Velocidade do som': 'V'},
+            {'Condutividade térmica': 'CONDUCTIVITY'}
+        ]
         lista_fluidos = prop.get_global_param_string("fluids_list").split(",")
         st.title('Insira as condições do fluido', anchor=False)
 
         col1, col2, col3,col4,col5 = st.columns(5)
         with col1:
             st.header("Fluido",anchor=False)
-            fluido_selecionado = st.selectbox("Fluido", lista_fluidos, index=93)
+            fluido_selecionado = st.selectbox("Fluido", lista_fluidos, index=121)
         with col2:
             st.header("Pressão",anchor=False)
             pressao = st.number_input("Digite a pressão", min_value=0.1,step=0.1,format="%.1f")
@@ -43,7 +43,7 @@ if applicativo == "Propriedades Termodinâmicas":
             un_pressão = st.selectbox("Un",["MCA","Bar","Pa"],index=1)
         with col4:
             st.header("Temp.",anchor=False)
-            temperatura = st.number_input("Digite a temperatura", min_value=0.1,step=0.1,format="%.1f")
+            temperatura = st.number_input("Digite a temperatura", min_value=0.1,step=1,format="%.1f")
         with col5:
             st.header("Un.", anchor=False)
             un_temperatura = st.selectbox("Un.", ["°C", "K"])
@@ -54,19 +54,44 @@ if applicativo == "Propriedades Termodinâmicas":
         try:
             viscosidade_Pas = prop.PropsSI('VISCOSITY', 'T', temperatura_consulta, 'P', pressão_consulta, fluido_selecionado)
             densidade = prop.PropsSI('D', 'T', temperatura_consulta, 'P', pressão_consulta, fluido_selecionado)
-            qualidade = prop.PropsSI('Q', 'T', temperatura_consulta, 'P', pressão_consulta, fluido_selecionado)
+            qualidade = PhaseSI('P', pressão_consulta, 'T', temperatura_consulta, fluido_selecionado)
             viscosidade_cp = viscosidade_Pas*1000
-            #fase = PhaseSI('P', pressão_consulta,)
-
+            temperatura_ebulição = PropsSI('T','P', pressão_consulta,'Q',0,fluido_selecionado)
+            temperatura_ebulição = temperatura_ebulição - 273.15
             texto_viscosidade = "{:.3f} Cp".format(viscosidade_cp)
-            st.title(texto_viscosidade,anchor=False)
+            st.subheader(texto_viscosidade,anchor=False,divider="blue")
             texto_densidade = "{:.3f} kg/m³".format(densidade)
-            st.title(texto_densidade,anchor=False)
-            texto_titulo = "{:.3f} ".format(qualidade)
-            st.title(texto_titulo,anchor=False)
+            st.subheader(texto_densidade,anchor=False,divider="blue")
+            texto_titulo = qualidade
+            st.subheader(texto_titulo,anchor=False,divider="blue")
+            texto_ebulição = "Ebulição {:.1f} °C".format(temperatura_ebulição)
+            st.subheader(texto_ebulição, anchor=False,divider="blue")
+
         except Exception as e:
-            st.title("Não disponível para este fluido")
+            st.subheader("Não disponível para este fluido")
             st.write(str(e))
+        st.title('Grafico', anchor=False)
+        col6, col7 = st.columns(2)
+        with col6:
+            condicao_x = st.selectbox("Condição",["Temperatura","Pressão"], index=1)
+            if condicao_x == "Pressão":
+                grafico_df = pd.DataFrame(columns=["Pressão_Pa","Pressão_sel", "Densidade", "Viscosidade", "Estado"])
+                pressao_indice = np.linspace((pressão_consulta-100000),(pressão_consulta+100000),num=101)
+                pressao_indice = np.where(pressao_indice < 1000,1000,pressao_indice)
+                grafico_df["Pressão_Pa"] = pressao_indice
+                grafico_df["Pressão_sel"] = (grafico_df["Pressão_Pa"]/9806.08) if (un_pressão == "MCA") else (grafico_df["Pressão_Pa"]/100000) if (un_pressão == "Bar") else grafico_df["Pressão_Pa"]
+                for i in range(len(grafico_df)):
+                    grafico_df.loc[(i),"Densidade"] = prop.PropsSI('D', 'T', temperatura_consulta, 'P', grafico_df.loc[i,"Pressão_Pa"], fluido_selecionado)
+                    grafico_df.loc[(i),"Viscosidade"] = prop.PropsSI('VISCOSITY', 'T', temperatura_consulta, 'P',grafico_df.loc[i, "Pressão_Pa"], fluido_selecionado)
+                    grafico_df.loc[(i),"Estado"] = PhaseSI('P',grafico_df.loc[i, "Pressão_Pa"],'T', temperatura_consulta, fluido_selecionado)
+
+
+            elif condicao_x == "Temperatura":
+                grafico_df = pd.DataFrame(columns=["Temperatura", "Densidade", "Viscosidade", "Estado"])
+        with col7:
+            propriedade_y = st.selectbox("Propriedade", ['Densidade','Viscosidade'], index=1)
+
+        st.table(grafico_df)
 
 
 
