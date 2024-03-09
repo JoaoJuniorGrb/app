@@ -34,7 +34,7 @@ if applicativo == "Propriedades Termodinâmicas":
         col1, col2, col3,col4,col5 = st.columns(5)
         with col1:
             st.header("Fluido",anchor=False)
-            fluido_selecionado = st.selectbox("Fluido", lista_fluidos, index=121)
+            fluido_selecionado = st.selectbox("Fluido", lista_fluidos, index=90)
         with col2:
             st.header("Pressão",anchor=False)
             pressao = st.number_input("Digite a pressão", min_value=0.1,step=0.1,format="%.1f")
