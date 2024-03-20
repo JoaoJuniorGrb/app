@@ -61,7 +61,7 @@ if applicativo == "Propriedades Termodinâmicas":
             temperatura_ebulição = PropsSI('T','P', pressão_consulta,'Q',0,fluido_selecionado)
             temperatura_ebulição = temperatura_ebulição - 273.15
             p_vapor = PropsSI('P', 'T', temperatura_consulta, 'Q', 1, fluido_selecionado)
-            p_vapor =   p_vapor/10000
+            p_vapor =   p_vapor/100000
             texto_viscosidade = "{:.3f} Cp".format(viscosidade_cp)
             st.subheader(texto_viscosidade,anchor=False,divider="blue")
             texto_densidade = "{:.3f} kg/m³".format(densidade)
