@@ -7,6 +7,7 @@ import pandas as pd
 import numpy as np
 from io import BytesIO
 import requests
+import plotly.express as px
 
 #Inicial
 programas = ["Propriedades Termodinâmicas","Final"]
@@ -87,17 +88,60 @@ if applicativo == "Propriedades Termodinâmicas":
                 grafico_df["Pressão_Pa"] = pressao_indice
                 grafico_df["Pressão_sel"] = (grafico_df["Pressão_Pa"]/9806.08) if (un_pressão == "MCA") else (grafico_df["Pressão_Pa"]/100000) if (un_pressão == "Bar") else grafico_df["Pressão_Pa"]
                 for i in range(len(grafico_df)):
-                    grafico_df.loc[(i),"Densidade"] = prop.PropsSI('D', 'T', temperatura_consulta, 'P', grafico_df.loc[i,"Pressão_Pa"], fluido_selecionado)
-                    grafico_df.loc[(i),"Viscosidade"] = prop.PropsSI('VISCOSITY', 'T', temperatura_consulta, 'P',grafico_df.loc[i, "Pressão_Pa"], fluido_selecionado)
-                    grafico_df.loc[(i),"Estado"] = PhaseSI('P',grafico_df.loc[i, "Pressão_Pa"],'T', temperatura_consulta, fluido_selecionado)
+                    grafico_df.loc[(i), "Estado"] = PhaseSI('P', grafico_df.loc[i, "Pressão_Pa"], 'T',temperatura_consulta, fluido_selecionado)
+                    if grafico_df.loc[(i), "Estado"] == "liquid":
+                        grafico_df.loc[(i),"Densidade"] = prop.PropsSI('D', 'T', temperatura_consulta, 'P', grafico_df.loc[i,"Pressão_Pa"], fluido_selecionado)
+                        grafico_df.loc[(i),"Viscosidade"] = 1000*prop.PropsSI('VISCOSITY', 'T', temperatura_consulta, 'P',grafico_df.loc[i, "Pressão_Pa"], fluido_selecionado)
+                    else:
+                        grafico_df.loc[(i), "Densidade"] = "null"
+                        grafico_df.loc[(i), "Viscosidade"] ="null"
+
 
 
             elif condicao_x == "Temperatura":
-                grafico_df = pd.DataFrame(columns=["Temperatura", "Densidade", "Viscosidade", "Estado"])
+                grafico_df = pd.DataFrame(columns=["Temperatura_K","Temperatura_sel","Densidade", "Viscosidade", "Estado"])
+                temperatura_indice = np.linspace((temperatura_consulta - 100), (temperatura_consulta + 100), num=101)
+
+
+                temperatura_indice = np.where(temperatura_indice < 1, 274, temperatura_indice)
+                grafico_df["Temperatura_K"] = temperatura_indice
+                grafico_df["Temperatura_sel"] = (temperatura_indice - 273.15) if un_temperatura == "°C" else temperatura_indice
+                for i in range(len(grafico_df)):
+                    try:
+
+                        if "liquid" == PhaseSI('P', pressão_consulta, 'T',grafico_df.loc[i, "Temperatura_K"],fluido_selecionado):
+                            grafico_df.loc[(i), "Estado"] = PhaseSI('P', pressão_consulta, 'T',grafico_df.loc[i, "Temperatura_K"],fluido_selecionado)
+                            grafico_df.loc[(i), "Densidade"] = prop.PropsSI('D', 'T', grafico_df.loc[i, "Temperatura_K"], 'P',pressão_consulta, fluido_selecionado)
+                            grafico_df.loc[(i), "Viscosidade"] = 1000*prop.PropsSI('VISCOSITY', 'T', grafico_df.loc[i, "Temperatura_K"], 'P',pressão_consulta, fluido_selecionado)
+                        else:
+                            grafico_df.loc[(i), "Estado"] = "null"
+                            grafico_df.loc[(i), "Densidade"] = "null"
+                            grafico_df.loc[(i), "Viscosidade"] = "null"
+                            grafico_df.loc[(i), "Estado"] = "null"
+                    except Exception as e:
+                        if "liquid" == PhaseSI('P', pressão_consulta, 'T', grafico_df.loc[i, "Temperatura_K"],fluido_selecionado):
+                            grafico_df.loc[(i), "Estado"] = "null"
+                            grafico_df.loc[(i), "Densidade"] = "null"
+                            grafico_df.loc[(i), "Viscosidade"] = "null"
+                            grafico_df.loc[(i), "Estado"] = "null"
+
         with col7:
             propriedade_y = st.selectbox("Propriedade", ['Densidade','Viscosidade'], index=1)
+        if propriedade_y == 'Densidade' and condicao_x == "Temperatura":
+            fig = px.line(grafico_df, x="Temperatura_sel", y="Densidade")
+            fig.update_yaxes(title_text='Densidade kg/m³')
+        if propriedade_y == 'Viscosidade' and condicao_x == "Temperatura":
+            fig = px.line(grafico_df, x="Temperatura_sel", y="Viscosidade")
+            fig.update_yaxes(title_text='Viscosidade Cp')
+        if propriedade_y == 'Viscosidade' and condicao_x == "Pressão":
+            fig = px.line(grafico_df, x="Pressão_sel", y="Viscosidade")
+            fig.update_yaxes(title_text='Viscosidade Cp')
+        if propriedade_y == 'Densidade' and condicao_x == "Pressão":
+            fig = px.line(grafico_df, x="Pressão_sel", y="Densidade")
+            fig.update_yaxes(title_text='Densidade kg/m³')
+        st.plotly_chart(fig)
+        #st.table(grafico_df)
 
-        st.table(grafico_df)
 
 if applicativo == "Final":
     arqivo_css = 'https://github.com/JoaoJuniorGrb/app/blob/4ef7f6d97028d111ca7ddc34ff1a2e6c6e9b0a3f/propriedades/styles/main.css'
