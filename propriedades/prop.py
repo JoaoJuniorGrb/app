@@ -5,13 +5,11 @@ from pathlib import Path
 from PIL import Image
 import pandas as pd
 import numpy as np
-from io import BytesIO
-import requests
 import plotly.express as px
 
 #Inicial
-programas = ["Propriedades Termodinâmicas","Final"]
-legendas1 = ["Fornece gráfico de propriedades termodinamicas selecionadas","Informações sobre o programa"]
+programas = ["Propriedades Termodinâmicas","Perda de Carga","Final"]
+legendas1 = ["Fornece gráfico de propriedades termodinamicas selecionadas","Cálculo de perda de carga","Informações sobre o programa"]
 
 st.sidebar.header("Selecione o programa desejado")
 applicativo = st.sidebar.radio("Seleção",programas,captions = legendas1)
@@ -142,21 +140,50 @@ if applicativo == "Propriedades Termodinâmicas":
         st.plotly_chart(fig)
         #st.table(grafico_df)
 
+if applicativo == "Perda de Carga":
+    rugosidade_data = {'Aço Carbono':0.15,'Cobre':0.0015,'PVC':0.0018,'Aço Inoxidável':0.015,'Ferro Fundido':0.26,'Aço comercial ou ferro Forjado':0.046}
+    materiais_lista = rugosidade_data.keys()
+    materiais_lista = list(materiais_lista)
+    metodo_carga = st.selectbox("Selecione o metodo de calculo", ["Simplificado", "Sucção/recalque/NPSHd"])
+    carga1, carga2, carga3, carga4 = st.columns(4)
+    with carga1:
+        st.header("Pressão", anchor=False)
+        carga_un = st.selectbox("Unidade", ["Mcf", "Bar", "Pa"], index=1)
+    with carga2:
+        st.header("Vazão", anchor=False)
+        carga_vazao = st.number_input("m³/h", min_value=0.1, step=0.1, format="%.1f")
+    with carga3:
+        st.header("Tubo", anchor=False)
+        carga_tubo = st.selectbox("Unid", materiais_lista, index=1)
+    with carga4:
+        st.header("   Ø", anchor=False)
+        carga_tubo = st.selectbox("Uni", ['1/4”','1/2”','3/8”','3/4”','1”,3”','4”','5”','6”','8”','10”','12”','1.1/4”','1.1/2”','2”','2.1/2”'], index=1)
+
+    st.header("P Entrada (0 em ambiente)", anchor=False)
+    carga5, carga6 = st.columns(2)
+    with carga5:
+        carga_entrada = st.number_input("Manométrica", min_value=0.0, step=0.1, format="%.1f")
+    with carga6:
+        altura_entrada = st.number_input("Altura [m]", min_value=0.0, step=0.1, format="%.1f")
+
+    st.header("P Saída (0 em ambiente)", anchor=False)
+    carga7, carga8 = st.columns(2)
+    with carga7:
+        carga_saída = st.number_input("P saida", min_value=0.0, step=0.1, format="%.1f")
+    with carga8:
+
+        altura_saida = st.number_input("Altura [m] ", min_value=0.0, step=0.1, format="%.1f")
 
 if applicativo == "Final":
-    arqivo_css = 'https://github.com/JoaoJuniorGrb/app/blob/4ef7f6d97028d111ca7ddc34ff1a2e6c6e9b0a3f/propriedades/styles/main.css'
-    arqivo_pdf = 'https://github.com/JoaoJuniorGrb/app/blob/4ef7f6d97028d111ca7ddc34ff1a2e6c6e9b0a3f/propriedades/assets/Curriculo.pdf'
-    arqivo_img = 'https://github.com/JoaoJuniorGrb/appestreamlit/blob/624cf41fb2c6bc7152359344c6d0b29f264228e1/Foto_.jpg?raw=true'
+    diretorio = Path(__file__).parent if "__file__" in locals() else Path.cdw()
+    arqivo_css = diretorio / "styles" / "main.css"
+    arqivo_pdf = diretorio / "assets" / "Curriculo.pdf"
+    arqivo_img = diretorio / "assets" / "foto_.jpg"
     titulo = "Curriculum | João Ferreira Junior"
     nome = "João Ferreira Junior"
     descrição = "Engenheiro de Energia, Pós graduação em Automação e controle de processos Conhecimento em Python e microcontroladores"
     st.title('Desenvolvido por',nome)
-    # Fazer o download da imagem
-    response = requests.get(arqivo_img)
-    if response.status_code == 200:
-        # Abrir a imagem a partir do conteúdo binário
-        img = Image.open(BytesIO(response.content))
-    
+
     email = "joaojunior.grb@hotmail.com"
     midia_social = {"LinkedIn": "https://www.linkedin.com/in/jo%C3%A3o-ferreira-junior-b2698163/?lipi=urn%3Ali%3Apage%3Ad_flagship3_feed%3BAjwOn5KcRhmkdM6UuXiVjw%3D%3D"}
 
@@ -164,16 +191,26 @@ if applicativo == "Final":
                 ":toolbox: Ferramenta 2": "ferramenta 2",
                 ":toolbox: Ferramenta 3": "ferramenta 2"}
 
-      
-    
+    # carregando assets
+    with open(arqivo_css) as c:
+        st.markdown("<style>{}</style>".format(c.read()), unsafe_allow_html=True)
+    with open(arqivo_pdf, "rb") as arquivo_pdf:
+        pdfleitura = arquivo_pdf.read()
+    imagem = Image.open(arqivo_img)
+
     col1, col2 = st.columns(2, gap="small")
 
     with col1:
-        st.image(img,width=250)
+        st.image(imagem, width=250)
 
     with col2:
         st.title(nome,anchor=False)
         st.write(descrição,anchor=False)
+        st.download_button(label="Download Curriculum",
+                           data=pdfleitura,
+                           file_name=arquivo_pdf.name,
+                           mime="aplication/octet-stream"
+                           )
         st.write(":email:", email)
 
     # midias sosiais
@@ -188,8 +225,8 @@ if applicativo == "Final":
     st.subheader("Experiências",anchor=False)
     st.write(""":white_check_mark: Fiedler Automação industrial""", anchor=False)
     st.write(""" 	:white_check_mark: Termosul engenharia e aquecimento """,
-        anchor = False
-    )
+             anchor = False
+             )
 
 
 
