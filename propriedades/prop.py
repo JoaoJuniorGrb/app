@@ -186,6 +186,7 @@ if applicativo == "Final":
     nome = "João Ferreira Junior"
     descrição = "Engenheiro de Energia, Pós graduação em Automação e controle de processos Conhecimento em Python e microcontroladores"
     st.title('Desenvolvido por',nome)
+    
     # Fazer o download da imagem
     response = requests.get(arqivo_img)
     if response.status_code == 200:
@@ -198,20 +199,5 @@ if applicativo == "Final":
                 ":toolbox: Ferramenta 2": "ferramenta 2",
                 ":toolbox: Ferramenta 3": "ferramenta 2"}
 
-
-
-
-
-
-
-
-#remove estilo stream lit
-remove_st_estilo = """
-    <style>
-        #MainMenu {visibility: hidden;}
-        footer {visibility: hidden;}
-        header {visibility: hidden;}
-    </style>
-"""
 
 st.markdown(remove_st_estilo,unsafe_allow_html=True)
