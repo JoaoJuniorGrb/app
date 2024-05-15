@@ -7,6 +7,7 @@ import pandas as pd
 import numpy as np
 import plotly.express as px
 import requests
+from io import BytesIO
 
 #Inicial
 programas = ["Propriedades Termodinâmicas","Perda de Carga","Final"]
