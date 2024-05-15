@@ -178,26 +178,46 @@ if applicativo == "Perda de Carga":
 
 if applicativo == "Final":
     arqivo_css = 'https://github.com/JoaoJuniorGrb/app/blob/4ef7f6d97028d111ca7ddc34ff1a2e6c6e9b0a3f/propriedades/styles/main.css'
-    arqivo_img = 'https://github.com/JoaoJuniorGrb/app/blob/ab179f119cecb2ec3677bac45706fd5b534d47f7/propriedades/assets/Foto_.jpg'
-
-    
-    
+    arqivo_pdf = 'https://github.com/JoaoJuniorGrb/app/blob/4ef7f6d97028d111ca7ddc34ff1a2e6c6e9b0a3f/propriedades/assets/Curriculo.pdf'
+    arqivo_img = 'https://github.com/JoaoJuniorGrb/appestreamlit/blob/624cf41fb2c6bc7152359344c6d0b29f264228e1/Foto_.jpg?raw=true'
     titulo = "Curriculum | João Ferreira Junior"
     nome = "João Ferreira Junior"
     descrição = "Engenheiro de Energia, Pós graduação em Automação e controle de processos Conhecimento em Python e microcontroladores"
     st.title('Desenvolvido por',nome)
-    
     # Fazer o download da imagem
     response = requests.get(arqivo_img)
     if response.status_code == 200:
         # Abrir a imagem a partir do conteúdo binário
         img = Image.open(BytesIO(response.content))
-    
+
     email = "joaojunior.grb@hotmail.com"
     midia_social = {"LinkedIn": "https://www.linkedin.com/in/jo%C3%A3o-ferreira-junior-b2698163/?lipi=urn%3Ali%3Apage%3Ad_flagship3_feed%3BAjwOn5KcRhmkdM6UuXiVjw%3D%3D"}
+
     projetos = {":toolbox: Ferramenta 1": "ferramenta 1",
                 ":toolbox: Ferramenta 2": "ferramenta 2",
                 ":toolbox: Ferramenta 3": "ferramenta 2"}
 
 
-st.markdown(remove_st_estilo,unsafe_allow_html=True)
+
+    col1, col2 = st.columns(2, gap="small")
+
+    with col1:
+        st.image(img,width=250)
+
+    with col2:
+        st.title(nome,anchor=False)
+        st.write(descrição,anchor=False)
+        st.write(":email:", email)
+
+    # midias sosiais
+    st.write("#")
+    colunas = st.columns(len(midia_social))
+    for indice, (plataforma, link) in enumerate(midia_social.items()):
+        colunas[indice].write(f"[{plataforma}]({link})")
+    # experiencias
+    st.write("#")
+    st.subheader("Experiências",anchor=False)
+    st.write(""":white_check_mark: Fiedler Automação industrial""", anchor=False)
+    st.write(""" 	:white_check_mark: Termosul engenharia e aquecimento """,
+        anchor = False
+    )
