@@ -153,7 +153,7 @@ if applicativo == "Perda de Carga":
         carga_un = st.selectbox("Unidade", ["Mcf", "Bar", "Pa"], index=1)
     with carga2:
         st.header("Vazão", anchor=False)
-        carga_vazao = st.number_input("m³/h", min_value=0.1, step=0.1, format="%.1f")
+        carga_vazao = st.number_input("m³/h", min_value=0.0, step=0.1, format="%.1f")
     with carga3:
         st.header("Tubo", anchor=False)
         carga_tubo = st.selectbox("Unid", materiais_lista, index=1)
