@@ -6,6 +6,7 @@ from PIL import Image
 import pandas as pd
 import numpy as np
 import plotly.express as px
+import requests
 
 #Inicial
 programas = ["Propriedades Termodinâmicas","Perda de Carga","Final"]
