@@ -8,6 +8,7 @@ import numpy as np
 import plotly.express as px
 import requests
 from io import BytesIO
+from scipy.optimize import fsolve
 
 #Inicial
 programas = ["Propriedades Termodinâmicas","Perda de Carga","Final"]
