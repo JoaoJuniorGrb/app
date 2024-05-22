@@ -143,38 +143,188 @@ if applicativo == "Propriedades Termodinâmicas":
         #st.table(grafico_df)
 
 if applicativo == "Perda de Carga":
-    rugosidade_data = {'Aço Carbono':0.15,'Cobre':0.0015,'PVC':0.0018,'Aço Inoxidável':0.015,'Ferro Fundido':0.26,'Aço comercial ou ferro Forjado':0.046}
-    materiais_lista = rugosidade_data.keys()
-    materiais_lista = list(materiais_lista)
+    st.header("Perda de Carga", anchor=False)
+
+    # Dados da tabela transcritos manualmente
+    dados_tubos = {
+    'Material': ['Aço carbono'] * 26 + ['Inox'] * 26 + ['PVC'] * 9 + ["Outro"],
+        'Bitola nominal': [
+        '1/4"', '3/8"', '1/2"', '3/4"', '1"', '1 1/4"', '1 1/2"', '2"', '2 1/2"', '3"', '3.1/2"', '4"', '5"', '6"', '8"', '10"', '12"', '14"', '16"', '18"', '20"', '22"', '24"', '26"', '28"', '30"',
+        '1/4"', '3/8"', '1/2"', '3/4"', '1"', '1 1/4"', '1 1/2"', '2"', '2 1/2"', '3"', '3.1/2"', '4"', '5"', '6"', '8"', '10"', '12"', '14"', '16"', '18"', '20"', '22"', '24"', '26"', '28"', '30"',
+        "15", "20", "25", "32", '40', '50', '65', '75', '100' , "N/A"],
+    'D interno': [
+        9.24, 12.53, 15.80, 20.93, 26.64, 35.04, 40.90, 52.50, 62.71, 77.92, 90.12, 102.26, 128.30, 154.08, 202.71, 254.51, 303.22, 334.34, 381.00, 428.66, 477.82, 527.04, 574.64, 777.84, 825.50, 876.30,
+        9.24, 12.53, 15.80, 20.93, 26.64, 35.04, 40.90, 52.50, 62.71, 77.92, 90.12, 102.26, 128.30, 154.08, 202.71, 254.51, 303.22, 334.34, 381.00, 428.66, 477.82, 527.04, 574.64, 777.84, 825.50, 876.30,
+        17, 21.6, 27.8, 35.2, 44, 53.4, 66.6, 75.6, 97.8, "N/A"],
+    'SCHEDULE': [40] * 52 + ['NBR5684', 'NBR5685', 'NBR5686', 'NBR5687', 'NBR5688', 'NBR5689', 'NBR5690', 'NBR5691', 'NBR5692',"N/A"]
+    }
+
+    def f_colebrook(reynolds,diametro_int_str,rugosidade):
+        def equation(f):
+            equation = 1 / np.sqrt(f) + 2.0 * np.log10((rugosidade / (diametro_int_str)) / 3.7 + 2.51 / (reynolds * np.sqrt(f)))
+            return equation
+
+        iteracao_inicial = 0.02
+        fator_atrito, = fsolve(equation,iteracao_inicial)
+        return fator_atrito
+
+    def f_reynolds(carga_densidade,carga_visosidade,velocidade,diametro_int_str):
+        reynolds = carga_densidade * (diametro_int_str/1000) * velocidade/ carga_visosidade
+        reynolds = float(reynolds)
+        return reynolds
+
+    def f_velocidade (diametro_int_str,carga_vazao_str):
+        area_tubo = 3.1415 * ((diametro_int_str / 1000) ** 2) / 4
+        velocidade = (carga_vazao_str / 3600) / area_tubo
+        return velocidade
+
+    # Criação do DataFrame
+    df_tubos = pd.DataFrame(dados_tubos)
+    rugosidade_data = {'Outro':"n/a",'Aço carbono':0.046,'PVC':0.0015,'Inox':0.015,'Ferro Fundido':0.26,'Aço comercial ou ferro Forjado':0.046}
+    materiais_lista = df_tubos['Material'].unique().tolist()
+
     metodo_carga = st.selectbox("Selecione o metodo de calculo", ["Simplificado", "Sucção/recalque/NPSHd"])
     carga1, carga2, carga3, carga4 = st.columns(4)
     with carga1:
         st.header("Pressão", anchor=False)
-        carga_un = st.selectbox("Unidade", ["Mcf", "Bar", "Pa"], index=1)
+        carga_un = st.selectbox("Unidade", ["Mcf", "Bar", "Pa"], index=0)
+        altura_entrada = st.number_input("Altura inicial [m]", min_value=0.0, step=0.1, format="%.1f")
+        altura_saida = st.number_input("Altura final [m]", min_value=0.0, step=0.1, format="%.1f")
     with carga2:
-        st.header("Vazão", anchor=False)
-        carga_vazao = st.number_input("m³/h", min_value=0.0, step=0.1, format="%.1f")
+        st.header("Fluido", anchor=False)
+        carga_vazao = st.number_input("Q [m³/h]", min_value=0.000001, step=0.01, format="%.2f")
+        carga_vazao_str = (carga_vazao)
+        carga_densidade =  st.number_input("ρ [kg/m³]", min_value=0.000001, step=0.01, format="%.2f", value=999.0)
+        carga_visosidade_ = st.number_input("μ [Cp]", min_value=0.00001, step=0.001, format="%.3f", value=1.01)
+        carga_visosidade = carga_visosidade_/1000
+        st.caption('1000[N.s/m²] = 1[CP]')
     with carga3:
         st.header("Tubo", anchor=False)
-        carga_tubo = st.selectbox("Unid", materiais_lista, index=1)
+        tipo_tubo = st.selectbox("Tipo", materiais_lista, index=0)
+        tipo_tubo_str = str(tipo_tubo)
+        df_tubo_sel = df_tubos[df_tubos['Material'] == tipo_tubo_str]
+        lista_bitola = df_tubo_sel['Bitola nominal'].unique().tolist()
+        rugosidade = rugosidade_data[tipo_tubo_str]
+        if tipo_tubo_str != "Outro":
+            st.subheader("Rugosidade \n {} mm".format(rugosidade), anchor=False)
+
+        if tipo_tubo_str == "Outro":
+            rugosidade = st.number_input("e [mm]", min_value=0.000001, step=0.01, format="%.4f")
+        st.info("Sucção < 1,5m/s \n"
+                "Recalque < 3.0m/s")
+
     with carga4:
         st.header("   Ø", anchor=False)
-        carga_tubo = st.selectbox("Uni", ['1/4”','1/2”','3/8”','3/4”','1”,3”','4”','5”','6”','8”','10”','12”','1.1/4”','1.1/2”','2”','2.1/2”'], index=1)
+        diametro_tubo = st.selectbox("Diâmetro comercial", lista_bitola, index=0)
+        diametro_tubo_str = str(diametro_tubo)
+        if tipo_tubo_str == "Outro":
+            diametro_int = st.number_input("Ø int [mm]", min_value=0.01, step=0.1, format="%.1f")
+            diametro_int_str = float(diametro_int)
+        if tipo_tubo_str != "Outro":
+            diametro_int = df_tubos.loc[(df_tubos['Material'] == tipo_tubo_str) & (df_tubos['Bitola nominal'] == diametro_tubo_str), 'D interno'].values
+            diametro_int_str = diametro_int[0] if len(diametro_int) > 0 else -1
+            st.subheader("Ø int \n {} mm".format(diametro_int_str), anchor=False)
+        velocidade = f_velocidade(diametro_int_str,carga_vazao_str)
+        st.subheader("Velocidade \n {:.2f} m/s".format(velocidade),anchor=False)
 
-    st.header("P Entrada (0 em ambiente)", anchor=False)
-    carga5, carga6 = st.columns(2)
-    with carga5:
-        carga_entrada = st.number_input("Manométrica", min_value=0.0, step=0.1, format="%.1f")
-    with carga6:
-        altura_entrada = st.number_input("Altura [m]", min_value=0.0, step=0.1, format="%.1f")
+    st.header("Acessórios", anchor=False)
 
-    st.header("P Saída (0 em ambiente)", anchor=False)
-    carga7, carga8 = st.columns(2)
-    with carga7:
-        carga_saída = st.number_input("P saida", min_value=0.0, step=0.1, format="%.1f")
-    with carga8:
 
-        altura_saida = st.number_input("Altura [m] ", min_value=0.0, step=0.1, format="%.1f")
+
+    #inserção de acessórios
+
+    # Inicializar o estado, se necessário
+    if 'inputs' not in st.session_state:
+        st.session_state['inputs'] = []
+
+
+    # Função para adicionar um campo de entrada
+    def add_input():
+        st.session_state['inputs'].append({'Acessório': 'Cotovelo 90°, padrão', 'Quantidade': 1})
+
+    # Função para remover um campo de entrada
+    def remove_input(index):
+        st.session_state['inputs'].pop(index)
+
+    #lista de acessórios
+    # Dicionário com os dados fornecidos
+    perda_friccao_dict = {
+        'Cotovelo 45°, padrão': 0.35,
+        'Cotovelo 45°, raio longo': 0.2,
+        'Cotovelo 90°, padrão': 0.75,
+        'Cotovelo 90°, raio longo': 0.45,
+        'Cotovelo quadrado ou chanfro': 1.3,
+        'Curva 180°, retorno próximo': 1.5,
+        'Tê, padrão, ao longo da corrida, ramal bloqueado': 0.4,
+        'União': 0.04,
+        'Válvula de gaveta, aberta': 0.17,
+        'Válvula de gaveta, meia aberta': 0.9,
+        'Válvula de gaveta, três quartos aberta': 4.5,
+        'Válvula de gaveta, totalmente aberta': 24,
+        'Válvula de diafragma, aberta': 2.3,
+        'Válvula de diafragma, meia aberta': 2.6,
+        'Válvula de diafragma, três quartos aberta': 4.3,
+        'Válvula de diafragma, totalmente aberta': 21,
+        'Válvula de esfera, totalmente aberta': 0.5,
+        'Válvula de esfera, 1/3 fechado': 5.5,
+        'Válvula de esfera, 2/3 fechado': 200,
+        'Válvula globo, assento biselado, aberta': 6,
+        'Válvula globo, assento biselado, meia aberta': 9.5,
+        'Válvula globo, assento de composição, aberta': 6,
+        'Válvula globo, assento de composição, meia aberta': 8.5,
+        'Válvula globo, disco de plugue, aberta': 9,
+        'Válvula globo, disco de plugue, meia aberta': 13,
+        'Válvula globo, disco de plugue, três quartos aberta': 36,
+        'Válvula globo, disco de plugue, totalmente aberta': 112,
+        'Válvula Y ou de purga, aberta': 3,
+        'Válvula borboleta, θ = 5°': 0.24,
+        'Válvula borboleta, θ = 10°': 0.52,
+        'Válvula borboleta, θ = 20°': 1.54,
+        'Válvula borboleta, θ = 40°': 10.8,
+        'Válvula borboleta, θ = 60°': 118,
+        'Válvula de retenção, oscilante': 2,
+        'Válvula de retenção, disco': 10,
+        'Válvula de retenção, esfera': 70,
+        'Válvula de pé': 15,
+        'Medidor de água, disco': 7,
+        'Medidor de água, pistão': 15,
+        'Medidor de água, rotativo (disco em forma de estrela)': 10,
+        'Medidor de água, roda de turbina': 6
+    }
+    acessorios = list(perda_friccao_dict.keys())
+
+    # Botão que, ao ser pressionado, aciona a função add_input
+    st.button('Adicionar acessório', on_click=add_input)
+
+    # Exibir os campos de entrada baseados no número armazenado no estado da sessão
+    # Exibir os campos de entrada baseados no número armazenado no estado da sessão
+    # Exibir os campos de entrada baseados no número armazenado no estado da sessão
+    for i, value in enumerate(st.session_state['inputs']):
+        # Forçar o valor a ser um dicionário, caso não seja
+        if not isinstance(value, dict):
+            st.session_state['inputs'][i] = {'Acessório': 'Cotovelo 45°, padrão', 'Quantidade': 1}
+
+        col1, col2, col3 = st.columns([4, 2, 2])
+        with col1:
+            current_acessorio = st.session_state['inputs'][i].get('Acessório','Cotovelo 45°, padrão')
+            acessorio = st.selectbox("Acessório", acessorios, index=acessorios.index(current_acessorio),key=f'acessorio_{i}')
+            st.session_state['inputs'][i]['Acessório'] = acessorio
+        with col2:
+            current_quantidade = st.session_state['inputs'][i].get('Quantidade', 1)
+            quantidade = st.number_input("Quantidade", min_value=1, step=1, key=f'quantidade_{i}',value=current_quantidade)
+            st.session_state['inputs'][i]['Quantidade'] = quantidade
+        with col3:
+            st.subheader("\n", anchor=False)
+            st.button('Excluir', key=f'remove_{i}', on_click=remove_input, args=(i,))
+
+    # Exibir o estado atual dos inputs para depuração
+    st.write(st.session_state['inputs'])
+
+    reynolds = f_reynolds(carga_densidade, carga_visosidade, velocidade, diametro_int_str)
+    fator_atrito = f_colebrook(reynolds, diametro_int_str, rugosidade)
+    st.subheader("Reynolds \n {:.2f} ".format(reynolds), anchor=False)
+    st.subheader("f \n {:.4f} ".format(fator_atrito), anchor=False)
+    st.subheader("e/d \n {:.6f} ".format(rugosidade / diametro_int_str), anchor=False)
 
 if applicativo == "Final":
     arqivo_css = 'https://github.com/JoaoJuniorGrb/app/blob/4ef7f6d97028d111ca7ddc34ff1a2e6c6e9b0a3f/propriedades/styles/main.css'
