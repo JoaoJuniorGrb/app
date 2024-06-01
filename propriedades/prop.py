@@ -160,6 +160,19 @@ if applicativo == "Perda de Carga":
     'SCHEDULE': [40] * 52 + ['NBR5684', 'NBR5685', 'NBR5686', 'NBR5687', 'NBR5688', 'NBR5689', 'NBR5690', 'NBR5691', 'NBR5692',"N/A"]
     }
 
+    def calcular_perda_de_carga(f_atrito,comprimento,velocidade,diametro_int_str):
+        rey = f_reynolds(carga_densidade, carga_visosidade, velocidade, diametro_int_str)
+        if rey > 3000:
+            perda_h = float(f_atrito * comprimento * (velocidade ** 2) / (2 * diametro_int))
+            return perda_h
+        else:
+            perda_h = float(((64/rey) * comprimento * (velocidade ** 2) / (2 * diametro_int)))
+            return perda_h
+
+    def perda_acessórios(k,velocidade):
+        perda_acess = k*(velocidade**2)/2
+        return perda_acess
+
     def f_colebrook(reynolds,diametro_int_str,rugosidade):
         def equation(f):
             equation = 1 / np.sqrt(f) + 2.0 * np.log10((rugosidade / (diametro_int_str)) / 3.7 + 2.51 / (reynolds * np.sqrt(f)))
@@ -191,6 +204,7 @@ if applicativo == "Perda de Carga":
         carga_un = st.selectbox("Unidade", ["Mcf", "Bar", "Pa"], index=0)
         altura_entrada = st.number_input("Altura inicial [m]", min_value=0.0, step=0.1, format="%.1f")
         altura_saida = st.number_input("Altura final [m]", min_value=0.0, step=0.1, format="%.1f")
+        comprimento_tubulação = st.number_input("Tubulação [m]", min_value=0.0, step=0.1, format="%.1f")
     with carga2:
         st.header("Fluido", anchor=False)
         carga_vazao = st.number_input("Q [m³/h]", min_value=0.000001, step=0.01, format="%.2f")
@@ -298,8 +312,6 @@ if applicativo == "Perda de Carga":
     st.button('Adicionar acessório', on_click=add_input)
 
     # Exibir os campos de entrada baseados no número armazenado no estado da sessão
-    # Exibir os campos de entrada baseados no número armazenado no estado da sessão
-    # Exibir os campos de entrada baseados no número armazenado no estado da sessão
     for i, value in enumerate(st.session_state['inputs']):
         # Forçar o valor a ser um dicionário, caso não seja
         if not isinstance(value, dict):
@@ -319,13 +331,71 @@ if applicativo == "Perda de Carga":
             st.button('Excluir', key=f'remove_{i}', on_click=remove_input, args=(i,))
 
     # Exibir o estado atual dos inputs para depuração
-    st.write(st.session_state['inputs'])
+
+    df_acessorios_usados = pd.DataFrame(st.session_state['inputs'])
+    tubo_dict = {'Acessório': 'Tubo', 'Quantidade': comprimento_tubulação, 'perda': 'PVC'}
 
     reynolds = f_reynolds(carga_densidade, carga_visosidade, velocidade, diametro_int_str)
     fator_atrito = f_colebrook(reynolds, diametro_int_str, rugosidade)
-    st.subheader("Reynolds \n {:.2f} ".format(reynolds), anchor=False)
-    st.subheader("f \n {:.4f} ".format(fator_atrito), anchor=False)
-    st.subheader("e/d \n {:.6f} ".format(rugosidade / diametro_int_str), anchor=False)
+
+    # Verifique se o DataFrame não está vazio antes de tentar exibir
+    if not df_acessorios_usados.empty:
+        df_acessorios_usados["k"] = df_acessorios_usados["Acessório"].map(perda_friccao_dict)
+        df_acessorios_usados["perda [m²/s²]"] = df_acessorios_usados["Quantidade"]*df_acessorios_usados["k"]*(velocidade**2)/2
+
+
+        nova_linha = pd.DataFrame({'Acessório': "Tubo"},index=[0])
+        df_acessorios_usados = pd.concat([df_acessorios_usados, nova_linha], ignore_index=True)
+
+    else:
+        df_acessorios_usados["k"] = 0
+        df_acessorios_usados["Quantidade"] = 0
+        nova_linha = pd.DataFrame({'Acessório': "Tubo"},index=[0])
+        df_acessorios_usados = pd.concat([df_acessorios_usados, nova_linha], ignore_index=True)
+    if not df_acessorios_usados.empty:
+        somatorio_k = (df_acessorios_usados['k']*df_acessorios_usados['Quantidade']).sum()
+    else:
+        somatorio_k = 0
+    perda_total_tubo = float(calcular_perda_de_carga(fator_atrito, comprimento_tubulação, velocidade, diametro_int_str))
+    indice_tubo = (df_acessorios_usados.index[df_acessorios_usados['Acessório']=="Tubo"][0])
+    df_acessorios_usados.loc[indice_tubo,"perda [m²/s²]"] = perda_total_tubo
+    df_acessorios_usados.loc[indice_tubo, "Quantidade"] = comprimento_tubulação
+    df_acessorios_usados.loc[indice_tubo, "k"] = 0
+    perda_mcf = (df_acessorios_usados["perda [m²/s²]"].sum())/9.81
+    #st.table(df_acessorios_usados)
+
+    #st.subheader(indice_tubo, anchor=False)
+    st.subheader("Reynolds {:.0f} ".format(reynolds), anchor=False)
+    st.subheader("Perda de Carga {:.2f} [mcf]".format(perda_mcf), anchor=False)
+    st.subheader("Fator de atrito {:.4f} ".format(fator_atrito), anchor=False)
+    #st.subheader("e/d {:.6f} ".format(rugosidade / diametro_int_str), anchor=False)
+
+    resolucao = st.slider("Selecione a resolução do grafico",(int(2*carga_vazao_str)), 1000, 100,1)
+    alcance = st.slider("Selecione o alcance no Grafico (x Vazão inicial)",1, 100, 2, 1)
+
+    vazao_indice = np.linspace((0.0001), (alcance*carga_vazao_str), num=resolucao)
+    df_grafico_perda = pd.DataFrame({'Vazão':vazao_indice,})
+    df_grafico_perda['Velocidade'] = df_grafico_perda['Vazão'].apply(lambda x:f_velocidade(diametro_int_str,x))
+    df_grafico_perda['k'] = None
+    df_grafico_perda['Reynolds'] = None
+    df_grafico_perda['Reynolds'] = df_grafico_perda["Velocidade"].apply(lambda x:f_reynolds(carga_densidade,carga_visosidade,x,diametro_int_str))
+    df_grafico_perda['f tubo'] = None
+    df_grafico_perda['f tubo'] = df_grafico_perda["Reynolds"].apply(lambda x:f_colebrook(x,diametro_int_str,rugosidade))
+    df_grafico_perda['k'] = df_grafico_perda['k'].map(lambda x:somatorio_k)
+    df_grafico_perda['Perda tubo m²/s²'] = None
+    df_grafico_perda['Perda tubo m²/s²'] = df_grafico_perda.apply(lambda row: calcular_perda_de_carga(row['f tubo'],comprimento_tubulação,row['Velocidade'],diametro_int_str),axis=1)
+    df_grafico_perda['Perda acess m²/s²'] = df_grafico_perda.apply(lambda row: perda_acessórios(row['k'],row['Velocidade']),axis=1)
+    calcular_perda_de_carga(fator_atrito, comprimento_tubulação, velocidade, diametro_int_str)
+    df_grafico_perda['Perda total m²/s²'] = df_grafico_perda['Perda acess m²/s²'] + df_grafico_perda['Perda tubo m²/s²']
+    df_grafico_perda['Perda total mcf'] = df_grafico_perda['Perda total m²/s²'] / 9.81
+
+    opcao_grafico_x = st.selectbox("Eixo X",["Vazão","Velocidade","Reynolds","Perda total mcf"])
+    opcao_grafico_y = st.selectbox("Eixo Y",["Vazão","Velocidade","Reynolds","Perda total mcf"])
+    st.line_chart(df_grafico_perda, x=opcao_grafico_x,y=opcao_grafico_y,color="#310CC7")
+
+    #st.table(df_grafico_perda)
+
+
 
 if applicativo == "Final":
     arqivo_css = 'https://github.com/JoaoJuniorGrb/app/blob/4ef7f6d97028d111ca7ddc34ff1a2e6c6e9b0a3f/propriedades/styles/main.css'
