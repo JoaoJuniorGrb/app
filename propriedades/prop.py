@@ -143,6 +143,7 @@ if applicativo == "Propriedades Termodinâmicas":
         st.plotly_chart(fig)
         #st.table(grafico_df)
 
+
 if applicativo == "Perda de Carga":
     st.header("Perda de Carga", anchor=False)
 
@@ -200,10 +201,9 @@ if applicativo == "Perda de Carga":
     metodo_carga = st.selectbox("Selecione o metodo de calculo", ["Simplificado", "Sucção/recalque/NPSHd"])
     carga1, carga2, carga3, carga4 = st.columns(4)
     with carga1:
-        st.header("Pressão", anchor=False)
-        carga_un = st.selectbox("Unidade", ["Mcf", "Bar", "Pa"], index=0)
-        altura_entrada = st.number_input("Altura inicial [m]", min_value=0.0, step=0.1, format="%.1f")
-        altura_saida = st.number_input("Altura final [m]", min_value=0.0, step=0.1, format="%.1f")
+        st.header("Distâncias", anchor=False)
+        altura_entrada = st.number_input("Altura inicial [m]", min_value=-1000.0,value=0.0, step=0.1, format="%.1f")
+        altura_saida = st.number_input("Altura final [m]", min_value=-1000.0,value=0.0, step=0.1, format="%.1f")
         comprimento_tubulação = st.number_input("Tubulação [m]", min_value=0.0, step=0.1, format="%.1f")
     with carga2:
         st.header("Fluido", anchor=False)
@@ -362,11 +362,14 @@ if applicativo == "Perda de Carga":
     df_acessorios_usados.loc[indice_tubo, "Quantidade"] = comprimento_tubulação
     df_acessorios_usados.loc[indice_tubo, "k"] = 0
     perda_mcf = (df_acessorios_usados["perda [m²/s²]"].sum())/9.81
+    perda_mcf = perda_mcf - altura_entrada + altura_saida
     #st.table(df_acessorios_usados)
 
     #st.subheader(indice_tubo, anchor=False)
     st.subheader("Reynolds {:.0f} ".format(reynolds), anchor=False)
     st.subheader("Perda de Carga {:.2f} [mcf]".format(perda_mcf), anchor=False)
+    if perda_mcf < 0:
+        st.subheader("Pressão positiva na saida!!!", anchor=False)
     st.subheader("Fator de atrito {:.4f} ".format(fator_atrito), anchor=False)
     #st.subheader("e/d {:.6f} ".format(rugosidade / diametro_int_str), anchor=False)
 
@@ -375,27 +378,32 @@ if applicativo == "Perda de Carga":
 
     vazao_indice = np.linspace((0.0001), (alcance*carga_vazao_str), num=resolucao)
     df_grafico_perda = pd.DataFrame({'Vazão':vazao_indice,})
-    df_grafico_perda['Velocidade'] = df_grafico_perda['Vazão'].apply(lambda x:f_velocidade(diametro_int_str,x))
+    df_grafico_perda['Velocidade m/s'] = df_grafico_perda['Vazão'].apply(lambda x:f_velocidade(diametro_int_str,x))
     df_grafico_perda['k'] = None
     df_grafico_perda['Reynolds'] = None
-    df_grafico_perda['Reynolds'] = df_grafico_perda["Velocidade"].apply(lambda x:f_reynolds(carga_densidade,carga_visosidade,x,diametro_int_str))
+    df_grafico_perda['Reynolds'] = df_grafico_perda["Velocidade m/s"].apply(lambda x:f_reynolds(carga_densidade,carga_visosidade,x,diametro_int_str))
     df_grafico_perda['f tubo'] = None
     df_grafico_perda['f tubo'] = df_grafico_perda["Reynolds"].apply(lambda x:f_colebrook(x,diametro_int_str,rugosidade))
     df_grafico_perda['k'] = df_grafico_perda['k'].map(lambda x:somatorio_k)
     df_grafico_perda['Perda tubo m²/s²'] = None
-    df_grafico_perda['Perda tubo m²/s²'] = df_grafico_perda.apply(lambda row: calcular_perda_de_carga(row['f tubo'],comprimento_tubulação,row['Velocidade'],diametro_int_str),axis=1)
-    df_grafico_perda['Perda acess m²/s²'] = df_grafico_perda.apply(lambda row: perda_acessórios(row['k'],row['Velocidade']),axis=1)
+    df_grafico_perda['Perda tubo m²/s²'] = df_grafico_perda.apply(lambda row: calcular_perda_de_carga(row['f tubo'],comprimento_tubulação,row['Velocidade m/s'],diametro_int_str),axis=1)
+    df_grafico_perda['Perda acess m²/s²'] = df_grafico_perda.apply(lambda row: perda_acessórios(row['k'],row['Velocidade m/s']),axis=1)
     calcular_perda_de_carga(fator_atrito, comprimento_tubulação, velocidade, diametro_int_str)
     df_grafico_perda['Perda total m²/s²'] = df_grafico_perda['Perda acess m²/s²'] + df_grafico_perda['Perda tubo m²/s²']
-    df_grafico_perda['Perda total mcf'] = df_grafico_perda['Perda total m²/s²'] / 9.81
+    df_grafico_perda['Perda total mcf'] = (df_grafico_perda['Perda total m²/s²'] / 9.81) - altura_entrada + altura_saida
 
-    opcao_grafico_x = st.selectbox("Eixo X",["Vazão","Velocidade","Reynolds","Perda total mcf"])
-    opcao_grafico_y = st.selectbox("Eixo Y",["Vazão","Velocidade","Reynolds","Perda total mcf"])
-    st.line_chart(df_grafico_perda, x=opcao_grafico_x,y=opcao_grafico_y,color="#310CC7")
+    opcao_grafico_x = st.selectbox("Eixo X",["Vazão","Reynolds","Velocidade m/s"])
+    opcao_grafico_y = st.multiselect("Eixo Y",["Reynolds","Perda total mcf","Velocidade m/s"])
+    #st.line_chart(df_grafico_perda, x=opcao_grafico_x,y=opcao_grafico_y)
+
+    fig = px.line(df_grafico_perda, x=opcao_grafico_x, y=opcao_grafico_y,
+                  labels={'Vazão': 'Vazão (m³/h)'
+                          ,"Velocidade":"m/s"})
+    # Escondendo o título do eixo Y
+    fig.update_yaxes(title_text='')
+    st.plotly_chart(fig)
 
     #st.table(df_grafico_perda)
-
-
 
 
 if applicativo == "Final":
