@@ -161,6 +161,63 @@ if applicativo == "Perda de Carga":
     'SCHEDULE': [40] * 52 + ['NBR5684', 'NBR5685', 'NBR5686', 'NBR5687', 'NBR5688', 'NBR5689', 'NBR5690', 'NBR5691', 'NBR5692',"N/A"]
     }
 
+
+    def get_altitude(municipio):
+        df_municipio = get_municipios()
+        id_municipio = df_municipio.loc[df_municipio["Município - Estado"] == municipio,"ID"].values[0]
+        url = "https://servicodados.ibge.gov.br/api/v1/bdg/municipio/" + str(id_municipio) + "/estacoes"
+        response = requests.get(url)
+        if response.status_code == 200:
+            altitudes_base = response.json()
+            data_processed = []
+            for item in altitudes_base:
+                altitude_normal = item.get('altitudeNormal')
+                altitude_geometrica = item.get('altitudeGeometrica')
+                data_processed.append({
+                    'Código Estação': item['codigoEstacao'],
+                    'Município': item['municipio']['nomeMunicipio'],
+                    'Estado': item['municipio']['uf']['sigla'],
+                    'Latitude': item['latitude'],
+                    'Longitude': item['longitude'],
+                    'Altitude Normal': str((altitude_normal)) if altitude_normal else None,
+                    'Altitude Geométrica': str((altitude_geometrica)) if altitude_geometrica else None,
+
+                })
+            df_altitudes = pd.DataFrame(data_processed)
+
+            # Função para converter strings de números para float
+            def convert_column_to_float(column):
+                return column.str.replace('.', '').str.replace(',', '.').astype(float)
+
+            # Aplicar a conversão para as colunas 'Altitude Normal' e 'Altitude Geométrica'
+            df_altitudes['Altitude Normal'] = convert_column_to_float(df_altitudes['Altitude Normal'])
+            df_altitudes['Altitude Geométrica'] = convert_column_to_float(
+                df_altitudes['Altitude Geométrica'].fillna('0'))  # Preencher NaNs temporariamente
+        return df_altitudes
+    def get_abspress(altitude,p_o):
+        exp = (9.806655*0.0289644/(8.3144594*0.0065))
+        pressao_abs = p_o * (1-(altitude*0.0065/(288.15))) ** exp
+        return pressao_abs
+
+    def get_municipios():
+        url = "https://servicodados.ibge.gov.br/api/v1/localidades/municipios?orderBy=nome"
+        response = requests.get(url)  # Faz uma requisição GET para a URL da API do IBGE que retorna os dados dos municípios.
+        if response.status_code == 200:  # Verifica se a resposta da requisição foi bem-sucedida (código 200).
+            municipios_base = response.json()  # Converte a resposta JSON em um dicionário Python.
+            data = []
+            for municipio in municipios_base:
+                id_municipio = municipio['id']
+                nome_municipio = municipio['nome']
+                sigla_estado = municipio['microrregiao']['mesorregiao']['UF']['sigla']
+                data.append([id_municipio, nome_municipio, sigla_estado])
+
+            df_municipio = pd.DataFrame(data, columns=['ID', 'Nome do Município', 'Sigla do Estado'])
+            df_municipio['Município - Estado'] = df_municipio['Nome do Município'] + "-" + df_municipio["Sigla do Estado"]
+            return df_municipio  # Retorna os dados dos municípios.
+        else:
+            municipios_base = [{'Nome do Município':"erro base de dados"}]
+            return df_municipio
+
     def calcular_perda_de_carga(f_atrito,comprimento,velocidade,diametro_int_str):
         rey = f_reynolds(carga_densidade, carga_visosidade, velocidade, diametro_int_str)
         if rey > 3000:
@@ -243,7 +300,7 @@ if applicativo == "Perda de Carga":
     rugosidade_data = {'Outro':"n/a",'Aço carbono':0.046,'PVC':0.0015,'Inox':0.015,'Ferro Fundido':0.26,'Aço comercial ou ferro Forjado':0.046}
     materiais_lista = df_tubos['Material'].unique().tolist()
 
-    metodo_carga = st.selectbox("Selecione o metodo de calculo", ["Simplificado", "Sucção/recalque/NPSHd"])
+    metodo_carga = st.selectbox("Selecione o metodo de calculo", ["Simplificado", "Sucção/NPSH disponível"])
     if metodo_carga == "Simplificado":
         carga1, carga2, carga3, carga4 = st.columns(4)
         with carga1:
@@ -418,6 +475,129 @@ if applicativo == "Perda de Carga":
         st.plotly_chart(fig)
 
         # st.table(df_grafico_perda)
+    if metodo_carga  == "Sucção/NPSH disponível":
+        municipios_base = get_municipios()
+        dicionario_propriedades = [
+            {'Viscosidade': 'VISCOSITY'},
+            {'Densidade': 'D'},
+            {'Entalpia': 'H'},
+            {'Entropia': 'S'},
+            {'Qualidade (fração mássica)': 'Q'},
+            {'Energia interna': 'U'},
+            {'Calor específico a pressão constante': 'C'},
+            {'Velocidade do som': 'V'},
+            {'Condutividade térmica': 'CONDUCTIVITY'}
+        ]
+        lista_fluidos = prop.get_global_param_string("fluids_list").split(",")
+
+
+
+        npsh1, npsh2, npsh3, npsh4 = st.columns([1,1,1,2])
+        with npsh1:
+            altura_entrada_npsh = st.number_input("Altura Sucção [m]", min_value=-1000.0, value=0.0, step=0.1,format="%.1f")
+            fluido_npsh = st.selectbox("Fluido", lista_fluidos, index=93)
+            temperatura_npsh = st.number_input("Temperatura [°C]", min_value=0.1, value=30.0, step=0.1, format="%.1f")
+            vazao_npsh = st.number_input("Vazão [m³/h]", min_value=0.0, step=0.1, format="%.1f")
+        with npsh2:
+            tipo_tubo = st.selectbox("Tubo", materiais_lista, index=0)
+            tipo_tubo_str = str(tipo_tubo)
+            df_tubo_sel = df_tubos[df_tubos['Material'] == tipo_tubo_str]
+            lista_bitola = df_tubo_sel['Bitola nominal'].unique().tolist()
+            rugosidade = rugosidade_data[tipo_tubo_str]
+            if tipo_tubo_str != "Outro":
+                st.subheader(" Rugosidade \n {} mm".format(rugosidade), anchor=False)
+
+            if tipo_tubo_str == "Outro":
+                rugosidade = st.number_input("e [mm]", min_value=0.000001, step=0.01, format="%.4f")
+            st.info("Sucção < 1,5m/s \n"
+                    "Recalque < 3.0m/s")
+        with npsh3:
+            diametro_tubo = st.selectbox("Diâmetro comercial", lista_bitola, index=0)
+            diametro_tubo_str = str(diametro_tubo)
+            if tipo_tubo_str == "Outro":
+                diametro_int = st.number_input("   Ø int [mm]", min_value=0.01, step=0.1, format="%.1f")
+                diametro_int_str = float(diametro_int)
+            if tipo_tubo_str != "Outro":
+                diametro_int = df_tubos.loc[(df_tubos['Material'] == tipo_tubo_str) & (
+                        df_tubos['Bitola nominal'] == diametro_tubo_str), 'D interno'].values
+                diametro_int_str = diametro_int[0] if len(diametro_int) > 0 else -1
+                st.subheader("Ø int \n {} mm".format(diametro_int_str), anchor=False)
+            velocidade = f_velocidade(diametro_int_str, vazao_npsh)
+            st.subheader("Velocidade \n {:.2f} m/s".format(velocidade), anchor=False)
+
+
+
+        with npsh4:
+            municipio = st.selectbox("Selecione o municipio", municipios_base['Município - Estado'])
+            #st.dataframe(municipios_base)
+            df_altitude = get_altitude(municipio)
+            min_altitude =int(df_altitude["Altitude Normal"].min())
+            max_altitude = int(df_altitude["Altitude Normal"].max())
+            med_altitude = int(df_altitude["Altitude Normal"].mean())
+            #st.dataframe(df_altitude)
+            #st.info("Min{}m | Med {}m | Max {}m".format(min_altitude,med_altitude,max_altitude))
+
+            altitude_npsh = st.number_input("Altitude Min {}m | Med {}m | Max {}m".format(min_altitude,med_altitude,max_altitude), min_value=min_altitude, value=med_altitude, step=1,)
+            abs_press = get_abspress(altitude_npsh,101325)
+            p_vapor = PropsSI('P', 'T', (temperatura_npsh+273.15), 'Q', 1, fluido_npsh)
+            #st.title("Min {}".format(min_altitude), anchor=False)
+            #st.title("Max {}".format(max_altitude), anchor=False)
+            #st.title("Med {}".format(med_altitude), anchor=False)
+            abs_bar = abs_press / (100000)
+            abs_mca = abs_bar * 10
+            bar_vapor = p_vapor / (100000)
+            st.subheader("Pressão Abs \n {:.3f} Bar Absoluto \n( {:.2f} mca )".format(abs_bar,abs_mca), anchor=False)
+            st.subheader("Pressão vapor \n {:.3f} Bar absoluto".format(bar_vapor), anchor=False)
+
+        st.header("Acessórios", anchor=False)
+
+        # inserção de acessórios
+
+        # Inicializar o estado, se necessário
+        if 'inputs' not in st.session_state:
+            st.session_state['inputs'] = []
+
+
+        # Função para adicionar um campo de entrada
+        def add_input():
+            st.session_state['inputs'].append({'Acessório': 'Cotovelo 90°, padrão', 'Quantidade': 1})
+
+
+        # Função para remover um campo de entrada
+        def remove_input(index):
+            st.session_state['inputs'].pop(index)
+
+
+        acessorios = list(perda_friccao_dict.keys())
+
+        # Botão que, ao ser pressionado, aciona a função add_input
+        st.button('Adicionar acessório', on_click=add_input)
+
+        # Exibir os campos de entrada baseados no número armazenado no estado da sessão
+        for i, value in enumerate(st.session_state['inputs']):
+            # Forçar o valor a ser um dicionário, caso não seja
+            if not isinstance(value, dict):
+                st.session_state['inputs'][i] = {'Acessório': 'Cotovelo 45°, padrão', 'Quantidade': 1}
+
+            col1, col2, col3 = st.columns([4, 2, 2])
+            with col1:
+                current_acessorio = st.session_state['inputs'][i].get('Acessório', 'Cotovelo 45°, padrão')
+                acessorio = st.selectbox("Acessório", acessorios, index=acessorios.index(current_acessorio),
+                                         key=f'acessorio_{i}')
+                st.session_state['inputs'][i]['Acessório'] = acessorio
+            with col2:
+                current_quantidade = st.session_state['inputs'][i].get('Quantidade', 1)
+                quantidade = st.number_input("Quantidade", min_value=1, step=1, key=f'quantidade_{i}',
+                                             value=current_quantidade)
+                st.session_state['inputs'][i]['Quantidade'] = quantidade
+            with col3:
+                st.subheader("\n", anchor=False)
+                st.button('Excluir', key=f'remove_{i}', on_click=remove_input, args=(i,))
+
+        # Exibir o estado atual dos inputs para depuração
+
+        df_acessorios_usados = pd.DataFrame(st.session_state['inputs'])
+
 
 
 
