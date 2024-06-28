@@ -475,6 +475,9 @@ if applicativo == "Perda de Carga":
         st.plotly_chart(fig)
 
         # st.table(df_grafico_perda)
+
+
+
     if metodo_carga  == "Sucção/NPSH disponível":
         municipios_base = get_municipios()
         dicionario_propriedades = [
@@ -497,7 +500,8 @@ if applicativo == "Perda de Carga":
             altura_entrada_npsh = st.number_input("Altura Sucção [m]", min_value=-1000.0, value=0.0, step=0.1,format="%.1f")
             fluido_npsh = st.selectbox("Fluido", lista_fluidos, index=93)
             temperatura_npsh = st.number_input("Temperatura [°C]", min_value=0.1, value=30.0, step=0.1, format="%.1f")
-            vazao_npsh = st.number_input("Vazão [m³/h]", min_value=0.0, step=0.1, format="%.1f")
+            vazao_npsh = st.number_input("Vazão [m³/h]", min_value=0.00000001, step=0.1, format="%.1f")
+            comprimento_tubulação = st.number_input("Tubulação [m]", min_value=0.0, step=0.1, format="%.1f")
         with npsh2:
             tipo_tubo = st.selectbox("Tubo", materiais_lista, index=0)
             tipo_tubo_str = str(tipo_tubo)
@@ -530,14 +534,21 @@ if applicativo == "Perda de Carga":
         with npsh4:
             municipio = st.selectbox("Selecione o municipio", municipios_base['Município - Estado'])
             #st.dataframe(municipios_base)
-            df_altitude = get_altitude(municipio)
-            min_altitude =int(df_altitude["Altitude Normal"].min())
-            max_altitude = int(df_altitude["Altitude Normal"].max())
-            med_altitude = int(df_altitude["Altitude Normal"].mean())
-            #st.dataframe(df_altitude)
-            #st.info("Min{}m | Med {}m | Max {}m".format(min_altitude,med_altitude,max_altitude))
-
-            altitude_npsh = st.number_input("Altitude Min {}m | Med {}m | Max {}m".format(min_altitude,med_altitude,max_altitude), min_value=min_altitude, value=med_altitude, step=1,)
+            try:
+                df_altitude = get_altitude(municipio)
+                min_altitude =int(df_altitude["Altitude Normal"].min())
+                max_altitude = int(df_altitude["Altitude Normal"].max())
+                med_altitude = int(df_altitude["Altitude Normal"].mean())
+                #st.dataframe(df_altitude)
+                #st.info("Min{}m | Med {}m | Max {}m".format(min_altitude,med_altitude,max_altitude))
+            except Exception as e:
+                min_altitude = -1
+                max_altitude = "Vazio"
+                med_altitude = 0
+            if min_altitude == -1:
+                altitude_npsh = st.number_input("Altitude (Sem dados IBGE)",min_value=0, value=0, step=1)
+            else:
+                altitude_npsh = st.number_input("Altitude Min {}m | Med {}m | Max {}m".format(min_altitude,med_altitude,max_altitude), min_value=min_altitude, value=med_altitude, step=1,)
             abs_press = get_abspress(altitude_npsh,101325)
             p_vapor = PropsSI('P', 'T', (temperatura_npsh+273.15), 'Q', 1, fluido_npsh)
             #st.title("Min {}".format(min_altitude), anchor=False)
@@ -595,8 +606,54 @@ if applicativo == "Perda de Carga":
                 st.button('Excluir', key=f'remove_{i}', on_click=remove_input, args=(i,))
 
         # Exibir o estado atual dos inputs para depuração
-
+        carga_densidade = prop.PropsSI('D', 'T', (temperatura_npsh+273.15) , 'P', abs_press ,fluido_npsh )
+        carga_visosidade = prop.PropsSI('VISCOSITY', 'T', (temperatura_npsh + 273.15), 'P', abs_press, fluido_npsh)
         df_acessorios_usados = pd.DataFrame(st.session_state['inputs'])
+        tubo_dict = {'Acessório': 'Tubo', 'Quantidade': comprimento_tubulação, 'perda': 'PVC'}
+
+        reynolds = f_reynolds(carga_densidade, carga_visosidade, velocidade, diametro_int_str)
+        fator_atrito = f_colebrook(reynolds, diametro_int_str, rugosidade)
+
+        # Verifique se o DataFrame não está vazio antes de tentar exibir
+        if not df_acessorios_usados.empty:
+            df_acessorios_usados["k"] = df_acessorios_usados["Acessório"].map(perda_friccao_dict)
+            df_acessorios_usados["perda [m²/s²]"] = df_acessorios_usados["Quantidade"] * df_acessorios_usados["k"] * (
+                    velocidade ** 2) / 2
+
+            nova_linha = pd.DataFrame({'Acessório': "Tubo"}, index=[0])
+            df_acessorios_usados = pd.concat([df_acessorios_usados, nova_linha], ignore_index=True)
+
+        else:
+            df_acessorios_usados["k"] = 0
+            df_acessorios_usados["Quantidade"] = 0
+            nova_linha = pd.DataFrame({'Acessório': "Tubo"}, index=[0])
+            df_acessorios_usados = pd.concat([df_acessorios_usados, nova_linha], ignore_index=True)
+        if not df_acessorios_usados.empty:
+            somatorio_k = (df_acessorios_usados['k'] * df_acessorios_usados['Quantidade']).sum()
+        else:
+            somatorio_k = 0
+        perda_total_tubo = float(
+            calcular_perda_de_carga(fator_atrito, comprimento_tubulação, velocidade, diametro_int_str))
+        indice_tubo = (df_acessorios_usados.index[df_acessorios_usados['Acessório'] == "Tubo"][0])
+        df_acessorios_usados.loc[indice_tubo, "perda [m²/s²]"] = perda_total_tubo
+        df_acessorios_usados.loc[indice_tubo, "Quantidade"] = comprimento_tubulação
+        df_acessorios_usados.loc[indice_tubo, "k"] = 0
+        perda_mcf = (df_acessorios_usados["perda [m²/s²]"].sum()) / 9.81
+
+        perda_bar = perda_mcf / 10
+        # st.table(df_acessorios_usados)
+        dinamica_bar = (carga_densidade * (velocidade*velocidade)/2)/100000
+        npsh_disponivel_bar = abs_bar - bar_vapor - perda_bar + dinamica_bar + (altura_entrada_npsh * 9.81 * carga_densidade/100000)
+        npsh_disponivel_mca = npsh_disponivel_bar * 10
+        # st.subheader(indice_tubo, anchor=False)
+        st.subheader("Reynolds {:.0f} ".format(reynolds), anchor=False)
+        st.subheader("Perda de Carga {:.2f} [mcf]".format(perda_mcf), anchor=False)
+        if perda_mcf < 0:
+            st.subheader("Pressão positiva na saida!!!", anchor=False)
+        st.subheader("Fator de atrito {:.4f} ".format(fator_atrito), anchor=False)
+        # st.subheader("e/d {:.6f} ".format(rugosidade / diametro_int_str), anchor=False)
+        st.subheader("NPSH disponivel {:.2f} ({:.1f}) ".format(npsh_disponivel_bar,npsh_disponivel_mca), anchor=False)
+        st.subheader("dinamica {:.2f} ({:.2f}) ".format(dinamica_bar, dinamica_bar*10), anchor=False)
 
 
 
