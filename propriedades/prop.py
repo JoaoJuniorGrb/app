@@ -475,9 +475,6 @@ if applicativo == "Perda de Carga":
         st.plotly_chart(fig)
 
         # st.table(df_grafico_perda)
-
-
-
     if metodo_carga  == "Sucção/NPSH disponível":
         municipios_base = get_municipios()
         dicionario_propriedades = [
@@ -654,8 +651,6 @@ if applicativo == "Perda de Carga":
         # st.subheader("e/d {:.6f} ".format(rugosidade / diametro_int_str), anchor=False)
         st.subheader("NPSH disponivel {:.2f} ({:.1f}) ".format(npsh_disponivel_bar,npsh_disponivel_mca), anchor=False)
         st.subheader("dinamica {:.2f} ({:.2f}) ".format(dinamica_bar, dinamica_bar*10), anchor=False)
-
-
 
 
 if applicativo == "Final":
