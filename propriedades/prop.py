@@ -553,9 +553,8 @@ if applicativo == "Perda de Carga":
             # st.title("Max {}".format(max_altitude), anchor=False)
             # st.title("Med {}".format(med_altitude), anchor=False)
             abs_bar = abs_press / (100000)
-            abs_mca = abs_bar * 10
             bar_vapor = p_vapor / (100000)
-            st.subheader("Pressão Abs \n {:.3f} Bar Absoluto \n( {:.2f} mca )".format(abs_bar, abs_mca), anchor=False)
+            st.subheader("Pressão Abs \n {:.3f} Bar Absoluto".format(abs_bar), anchor=False)
             st.subheader("Pressão vapor \n {:.3f} Bar absoluto".format(bar_vapor), anchor=False)
 
         st.header("Acessórios", anchor=False)
