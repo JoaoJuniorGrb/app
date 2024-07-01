@@ -510,6 +510,7 @@ if applicativo == "Perda de Carga":
             if tipo_tubo_str == "Outro":
                 rugosidade = st.number_input("e [mm]", min_value=0.000001, step=0.01, format="%.4f")
             margem_pv = st.number_input("Margem [Pv+%]", min_value=0.0,value=10.0,step=1.0, format="%.0f")
+            margem_pv = margem_pv / 100
             st.info("Sucção < 1,5m/s \n"
                     "Recalque < 3.0m/s")
         with npsh3:
@@ -640,7 +641,7 @@ if applicativo == "Perda de Carga":
         perda_bar = (df_acessorios_usados["perda [m²/s²]"].sum()) * carga_densidade / 100000
         # st.table(df_acessorios_usados)
         dinamica_bar = (carga_densidade * (velocidade * velocidade) )/ (2 * 100000)
-        npsh_disponivel_bar = abs_bar - bar_vapor - perda_bar + dinamica_bar + (
+        npsh_disponivel_bar = abs_bar - (bar_vapor * (1 + margem_pv)) - perda_bar + dinamica_bar + (
                     altura_entrada_npsh * 9.81 * carga_densidade / 100000)
         npsh_disponivel_mca = npsh_disponivel_bar * 100000 / (carga_densidade * 9.81)
         # st.subheader(indice_tubo, anchor=False)
@@ -676,7 +677,7 @@ if applicativo == "Perda de Carga":
         df_grafico_perda['Perda total m²/s²'] = df_grafico_perda['Perda acess m²/s²'] + df_grafico_perda['Perda tubo m²/s²']
         df_grafico_perda['Perda carga bar'] = (df_grafico_perda['Perda total m²/s²'] * carga_densidade) / 100000
         df_grafico_perda['ABS bar'] = abs_bar
-        df_grafico_perda['Pv bar'] = bar_vapor
+        df_grafico_perda['Pv bar'] = bar_vapor * (1 + margem_pv)
         df_grafico_perda['P Altura bar'] = altura_entrada_npsh * 9.81 * carga_densidade / 100000
         df_grafico_perda['P dinamica bar'] = carga_densidade * (df_grafico_perda['Velocidade m/s'] ** 2) / (2 * 100000)
         df_grafico_perda['NPSH Disp. bar'] = df_grafico_perda['ABS bar'] + df_grafico_perda['P Altura bar'] + df_grafico_perda['P dinamica bar'] - df_grafico_perda['Perda carga bar'] - df_grafico_perda['Pv bar']
