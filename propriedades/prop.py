@@ -475,7 +475,7 @@ if applicativo == "Perda de Carga":
         st.plotly_chart(fig)
 
         # st.table(df_grafico_perda)
-        if metodo_carga == "Sucção/NPSH disponível":
+    if metodo_carga == "Sucção/NPSH disponível":
         municipios_base = get_municipios()
         dicionario_propriedades = [
             {'Viscosidade': 'VISCOSITY'},
