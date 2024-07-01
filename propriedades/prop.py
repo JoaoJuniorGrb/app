@@ -642,7 +642,7 @@ if applicativo == "Perda de Carga":
         dinamica_bar = (carga_densidade * (velocidade * velocidade) )/ (2 * 100000)
         npsh_disponivel_bar = abs_bar - bar_vapor - perda_bar + dinamica_bar + (
                     altura_entrada_npsh * 9.81 * carga_densidade / 100000)
-        npsh_disponivel_mca = npsh_disponivel_bar * 100 000 / (carga_densidade * 9.81)
+        npsh_disponivel_mca = npsh_disponivel_bar * 100000 / (carga_densidade * 9.81)
         # st.subheader(indice_tubo, anchor=False)
         #st.subheader("Reynolds {:.0f} ".format(reynolds), anchor=False)
         #st.subheader("Perda de Carga {:.3f} [bar]".format(perda_bar), anchor=False)
