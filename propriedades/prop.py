@@ -436,7 +436,7 @@ if applicativo == "Perda de Carga":
         st.subheader("Fator de atrito {:.4f} ".format(fator_atrito), anchor=False)
         # st.subheader("e/d {:.6f} ".format(rugosidade / diametro_int_str), anchor=False)
 
-        resolucao = st.slider("Selecione a resolução do grafico", (int(2 * carga_vazao_str)), 1000, 100, 1)
+        resolucao = st.slider("Selecione a resolução do grafico", (int(2 * carga_vazao_str)), 1000, 5, 1)
         alcance = st.slider("Selecione o alcance no Grafico (x Vazão inicial)", 1, 100, 2, 1)
 
         vazao_indice = np.linspace((0.0001), (alcance * carga_vazao_str), num=resolucao)
