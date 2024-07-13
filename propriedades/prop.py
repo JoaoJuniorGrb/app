@@ -11,7 +11,7 @@ from io import BytesIO
 from scipy.optimize import fsolve
 
 #Inicial
-programas = ["Propriedades Termodinâmicas","Perda de Carga","Final"]
+programas = ["Perda de Carga","Propriedades Termodinâmicas","Final"]
 legendas1 = ["Fornece gráfico de propriedades termodinamicas selecionadas","Cálculo de perda de carga","Informações sobre o programa"]
 
 st.sidebar.header("Selecione o programa desejado")
