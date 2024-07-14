@@ -512,15 +512,14 @@ if applicativo == "Perda de Carga":
             df_tubo_sel = df_tubos[df_tubos['Material'] == tipo_tubo_str]
             lista_bitola = df_tubo_sel['Bitola nominal'].unique().tolist()
             rugosidade = rugosidade_data[tipo_tubo_str]
-            if tipo_tubo_str != "Outro":
-                st.subheader(" Rugosidade \n {} mm".format(rugosidade), anchor=False)
-
             if tipo_tubo_str == "Outro":
                 rugosidade = st.number_input("e [mm]", min_value=0.000001, step=0.01, format="%.4f")
             comprimento_tubulação = st.number_input("Tubulação [m]", min_value=0.0, step=0.1, format="%.1f")
             altura_entrada_npsh = st.number_input("Altura Sucção [m]", min_value=-1000.0, value=0.0, step=0.1,format="%.1f")
             margem_pv = st.number_input("Margem [Pv+%]", min_value=0.0,value=10.0,step=1.0, format="%.0f")
             margem_pv = (margem_pv/100) + 1
+            if tipo_tubo_str != "Outro":
+                st.subheader(" Rugosidade \n {} mm".format(rugosidade), anchor=False)
 
         with npsh3:
             diametro_tubo = st.selectbox("Diâmetro comercial", lista_bitola, index=0)
