@@ -143,6 +143,228 @@ if applicativo == "Propriedades Termodinâmicas":
         st.plotly_chart(fig)
         #st.table(grafico_df)
 
+if applicativo == "Tubulação de vapor":
+
+    def f_velocidade (diametro_int_str,carga_vazao_str):
+            area_tubo = 3.1415 * ((diametro_int_str / 1000) ** 2) / 4
+            velocidade = (carga_vazao_str / 3600) / area_tubo
+            return velocidade
+
+    # Dados da tabela transcritos manualmente
+    dados_tubos = {
+        'Material': ['Aço carbono'] * 26 + ['Inox'] * 26 + ['PVC'] * 9 + ["Outro"],
+        'Bitola nominal': [
+            '1/4"', '3/8"', '1/2"', '3/4"', '1"', '1 1/4"', '1 1/2"', '2"', '2 1/2"', '3"', '3.1/2"', '4"', '5"', '6"',
+            '8"', '10"', '12"', '14"', '16"', '18"', '20"', '22"', '24"', '26"', '28"', '30"',
+            '1/4"', '3/8"', '1/2"', '3/4"', '1"', '1 1/4"', '1 1/2"', '2"', '2 1/2"', '3"', '3.1/2"', '4"', '5"', '6"',
+            '8"', '10"', '12"', '14"', '16"', '18"', '20"', '22"', '24"', '26"', '28"', '30"',
+            "15", "20", "25", "32", '40', '50', '65', '75', '100', "N/A"],
+        'D interno': [
+            9.24, 12.53, 15.80, 20.93, 26.64, 35.04, 40.90, 52.50, 62.71, 77.92, 90.12, 102.26, 128.30, 154.08, 202.71,
+            254.51, 303.22, 334.34, 381.00, 428.66, 477.82, 527.04, 574.64, 777.84, 825.50, 876.30,
+            9.24, 12.53, 15.80, 20.93, 26.64, 35.04, 40.90, 52.50, 62.71, 77.92, 90.12, 102.26, 128.30, 154.08, 202.71,
+            254.51, 303.22, 334.34, 381.00, 428.66, 477.82, 527.04, 574.64, 777.84, 825.50, 876.30,
+            17, 21.6, 27.8, 35.2, 44, 53.4, 66.6, 75.6, 97.8, "N/A"],
+        'SCHEDULE': [40] * 52 + ['NBR5684', 'NBR5685', 'NBR5686', 'NBR5687', 'NBR5688', 'NBR5689', 'NBR5690', 'NBR5691',
+                                 'NBR5692', "N/A"]
+    }
+
+    # Criação do DataFrame
+    df_tubos = pd.DataFrame(dados_tubos)
+    rugosidade_data = {'Outro': "n/a", 'Aço carbono': 0.046, 'PVC': 0.0015, 'Inox': 0.015, 'Ferro Fundido': 0.26,
+                       'Aço comercial ou ferro Forjado': 0.046}
+    materiais_lista = df_tubos['Material'].unique().tolist()
+    def get_altitude(municipio):
+        df_municipio = get_municipios()
+        id_municipio = df_municipio.loc[df_municipio["Município - Estado"] == municipio, "ID"].values[0]
+        url = "https://servicodados.ibge.gov.br/api/v1/bdg/municipio/" + str(id_municipio) + "/estacoes"
+        response = requests.get(url)
+        if response.status_code == 200:
+            altitudes_base = response.json()
+            data_processed = []
+            for item in altitudes_base:
+                altitude_normal = item.get('altitudeNormal')
+                altitude_geometrica = item.get('altitudeGeometrica')
+                data_processed.append({
+                    'Código Estação': item['codigoEstacao'],
+                    'Município': item['municipio']['nomeMunicipio'],
+                    'Estado': item['municipio']['uf']['sigla'],
+                    'Latitude': item['latitude'],
+                    'Longitude': item['longitude'],
+                    'Altitude Normal': str((altitude_normal)) if altitude_normal else None,
+                    'Altitude Geométrica': str((altitude_geometrica)) if altitude_geometrica else None,
+
+                })
+            df_altitudes = pd.DataFrame(data_processed)
+
+            # Função para converter strings de números para float
+            def convert_column_to_float(column):
+                return column.str.replace('.', '').str.replace(',', '.').astype(float)
+
+            # Aplicar a conversão para as colunas 'Altitude Normal' e 'Altitude Geométrica'
+            df_altitudes['Altitude Normal'] = convert_column_to_float(df_altitudes['Altitude Normal'])
+            df_altitudes['Altitude Geométrica'] = convert_column_to_float(
+                df_altitudes['Altitude Geométrica'].fillna('0'))  # Preencher NaNs temporariamente
+        return df_altitudes
+
+
+    def get_abspress(altitude, p_o):
+        exp = (9.806655 * 0.0289644 / (8.3144594 * 0.0065))
+        pressao_abs = p_o * (1 - (altitude * 0.0065 / (288.15))) ** exp
+        return pressao_abs
+
+
+    def get_municipios():
+        url = "https://servicodados.ibge.gov.br/api/v1/localidades/municipios?orderBy=nome"
+        response = requests.get(
+            url)  # Faz uma requisição GET para a URL da API do IBGE que retorna os dados dos municípios.
+        if response.status_code == 200:  # Verifica se a resposta da requisição foi bem-sucedida (código 200).
+            municipios_base = response.json()  # Converte a resposta JSON em um dicionário Python.
+            data = []
+            for municipio in municipios_base:
+                id_municipio = municipio['id']
+                nome_municipio = municipio['nome']
+                sigla_estado = municipio['microrregiao']['mesorregiao']['UF']['sigla']
+                data.append([id_municipio, nome_municipio, sigla_estado])
+
+            df_municipio = pd.DataFrame(data, columns=['ID', 'Nome do Município', 'Sigla do Estado'])
+            df_municipio['Município - Estado'] = df_municipio['Nome do Município'] + "-" + df_municipio[
+                "Sigla do Estado"]
+            return df_municipio  # Retorna os dados dos municípios.
+        else:
+            municipios_base = [{'Nome do Município': "erro base de dados"}]
+            return df_municipio
+
+    municipios_base = get_municipios()
+    municipio = st.selectbox("Selecione o municipio", municipios_base['Município - Estado'])
+    # st.dataframe(municipios_base)
+    try:
+        df_altitude = get_altitude(municipio)
+        min_altitude = int(df_altitude["Altitude Normal"].min())
+        max_altitude = int(df_altitude["Altitude Normal"].max())
+        med_altitude = int(df_altitude["Altitude Normal"].mean())
+        # st.dataframe(df_altitude)
+        # st.info("Min{}m | Med {}m | Max {}m".format(min_altitude,med_altitude,max_altitude))
+    except Exception as e:
+        min_altitude = -1
+        max_altitude = "Vazio"
+        med_altitude = 0
+    if min_altitude == -1:
+        altitude_npsh = st.number_input("Altitude (Sem dados IBGE)", min_value=0, value=0, step=1)
+    else:
+        altitude_npsh = st.number_input(
+            "Altitude Min {}m | Med {}m | Max {}m".format(min_altitude, med_altitude, max_altitude),
+            min_value=0, value=med_altitude, step=1, )
+    abs_press = get_abspress(altitude_npsh, 101325)
+    abs_bar = abs_press / (100000)
+    col1, col2, col3, col4 = st.columns(4)
+    with col1:
+        st.header("Vapor 1", anchor=False)
+        fluido_selecionado_1 = st.selectbox("Vapor", ("Saturado","Superaquecido"), key="fluido_1")
+        massa_vapor_1_kgh = st.number_input("Vazão [kg/h]", min_value=0.0000000001,step=0.1, format="%.1f")
+
+        if fluido_selecionado_1 == "Saturado":
+            pressao_vap_1_bar = st.number_input("P Manometrica [bar]", min_value=0.0000000001,step=0.1, format="%.3f")
+            pressao_vap_1_pa = float((pressao_vap_1_bar + abs_bar) * 100000)
+            densidade_vapor_1 = prop.PropsSI('D', 'P',pressao_vap_1_pa,'Q',1, "Water")
+
+        if fluido_selecionado_1 == "Superaquecido":
+            pressao_vap_1_bar = st.number_input("P Manometrica [bar]", min_value=0.0000000001, step=0.1, format="%.3f")
+            pressao_vap_1_pa = (pressao_vap_1_bar + abs_bar)* 100000
+            temperatura_vap_1_c = st.number_input("Temperatura °C", min_value=-273.10, value = 100.00 ,step=0.1, format="%.1f")
+            temperatura_vap_1_k = temperatura_vap_1_c + 273.15
+            densidade_vapor_1 = prop.PropsSI('D', 'P', pressao_vap_1_pa, 'T',temperatura_vap_1_k,"Water")
+        vazao_vapor_1_mcubh = massa_vapor_1_kgh / densidade_vapor_1
+        tipo_tubo = st.selectbox("Tubo", materiais_lista, index=0)
+        tipo_tubo_str = str(tipo_tubo)
+        df_tubo_sel = df_tubos[df_tubos['Material'] == tipo_tubo_str]
+        lista_bitola = df_tubo_sel['Bitola nominal'].unique().tolist()
+        rugosidade = rugosidade_data[tipo_tubo_str]
+        diametro_tubo = st.selectbox("Diâmetro comercial", lista_bitola, index=0)
+        diametro_tubo_str = str(diametro_tubo)
+        if tipo_tubo_str == "Outro":
+            diametro_int = st.number_input("   Ø int [mm]", min_value=0.01, step=0.1, format="%.1f")
+            diametro_int_str = float(diametro_int)
+        if tipo_tubo_str != "Outro":
+            diametro_int = df_tubos.loc[(df_tubos['Material'] == tipo_tubo_str) & (
+                    df_tubos['Bitola nominal'] == diametro_tubo_str), 'D interno'].values
+            diametro_int_str = diametro_int[0] if len(diametro_int) > 0 else -1
+            st.subheader("Ø int \n {} mm".format(diametro_int_str), anchor=False)
+        velocidade = f_velocidade(diametro_int_str, vazao_vapor_1_mcubh)
+        st.subheader("Velocidade \n {:.2f} m/s".format(velocidade), anchor=False)
+        st.info("Velocidade\n 35m/s")
+
+
+    with col2:
+        st.header("Vapor 2", anchor=False)
+        fluido_selecionado_2 = st.selectbox("Vapor", ("Saturado", "Superaquecido"), key="fluido_2")
+        massa_vapor_2_kgh = st.number_input("Vazão [kg/h]", min_value=0.0000000001, step=0.1, format="%.1f",key = "massa_2")
+
+        if fluido_selecionado_2 == "Saturado":
+            pressao_vap_2_bar = st.number_input("P Manometrica [bar]", min_value=0.0000000001, step=0.1, format="%.3f",key = "pressao_2")
+            pressao_vap_2_pa = float((pressao_vap_2_bar + abs_bar) * 100000)
+            densidade_vapor_2 = prop.PropsSI('D', 'P', pressao_vap_2_pa, 'Q', 1, "Water")
+
+        if fluido_selecionado_2 == "Superaquecido":
+            pressao_vap_2_bar = st.number_input("P Manometrica [bar]", min_value=0.0000000001, step=0.1, format="%.3f", key = 'superaquecido_2')
+            pressao_vap_2_pa = (pressao_vap_2_bar + abs_bar) * 100000
+            temperatura_vap_2_c = st.number_input("Temperatura °C", min_value=-273.10, value=100.00, step=0.1,format="%.1f", key = "superaquecido_3")
+            temperatura_vap_2_k = temperatura_vap_2_c + 273.15
+            densidade_vapor_2 = prop.PropsSI('D', 'P', pressao_vap_2_pa, 'T', temperatura_vap_2_k, "Water")
+        vazao_vapor_2_mcubh = massa_vapor_2_kgh / densidade_vapor_2
+        tipo_tubo = st.selectbox("Tubo", materiais_lista, index=0,key = "tubo_2")
+        tipo_tubo_str = str(tipo_tubo)
+        df_tubo_sel = df_tubos[df_tubos['Material'] == tipo_tubo_str]
+        lista_bitola = df_tubo_sel['Bitola nominal'].unique().tolist()
+        rugosidade = rugosidade_data[tipo_tubo_str]
+        diametro_tubo = st.selectbox("Diâmetro comercial", lista_bitola, index=0,key = "diametro_tubo_2")
+        diametro_tubo_str = str(diametro_tubo)
+        if tipo_tubo_str == "Outro":
+            diametro_int = st.number_input("   Ø int [mm]", min_value=0.01, step=0.1, format="%.1f")
+            diametro_int_str = float(diametro_int)
+        if tipo_tubo_str != "Outro":
+            diametro_int = df_tubos.loc[(df_tubos['Material'] == tipo_tubo_str) & (
+                    df_tubos['Bitola nominal'] == diametro_tubo_str), 'D interno'].values
+            diametro_int_str = diametro_int[0] if len(diametro_int) > 0 else -1
+            st.subheader("Ø int \n {} mm".format(diametro_int_str), anchor=False)
+        velocidade = f_velocidade(diametro_int_str, vazao_vapor_2_mcubh)
+        st.subheader("Velocidade \n {:.2f} m/s".format(velocidade), anchor=False)
+        st.info("Velocidade\n 35m/s")
+    with col3:
+        st.header("Cond.", anchor=False)
+
+        temperatura_vap_3_c = st.number_input("Temperatura °C", min_value=-273.10, value=99.00, step=0.1,format="%.1f")
+        temperatura_vap_3_k = temperatura_vap_3_c + 273.15
+        massa_vapor_3_kgh = st.number_input("Vazão [kg/h]", min_value=0.0000000001, step=0.1, format="%.1f",key="cond_4")
+
+        pressao_vap_3_bar = st.number_input("P Manometrica [bar]", min_value=0.0000000001,value=1.00 ,step=0.1, format="%.3f",
+                                                key="cond_2")
+        pressao_vap_3_pa = float((pressao_vap_3_bar + abs_bar) * 100000)
+        densidade_vapor_3 = prop.PropsSI('D', 'P', pressao_vap_3_pa, 'T', temperatura_vap_3_k, "Water")
+
+
+        vazao_vapor_3_mcubh = massa_vapor_3_kgh / densidade_vapor_3
+        tipo_tubo = st.selectbox("Tubo", materiais_lista, index=0, key='cond_5')
+        tipo_tubo_str = str(tipo_tubo)
+        df_tubo_sel = df_tubos[df_tubos['Material'] == tipo_tubo_str]
+        lista_bitola = df_tubo_sel['Bitola nominal'].unique().tolist()
+        rugosidade = rugosidade_data[tipo_tubo_str]
+        diametro_tubo = st.selectbox("Diâmetro comercial", lista_bitola, index=0, key='cond_6')
+        diametro_tubo_str = str(diametro_tubo)
+        if tipo_tubo_str == "Outro":
+            diametro_int = st.number_input("   Ø int [mm]", min_value=0.01, step=0.1, format="%.1f")
+            diametro_int_str = float(diametro_int)
+        if tipo_tubo_str != "Outro":
+            diametro_int = df_tubos.loc[(df_tubos['Material'] == tipo_tubo_str) & (
+                    df_tubos['Bitola nominal'] == diametro_tubo_str), 'D interno'].values
+            diametro_int_str = diametro_int[0] if len(diametro_int) > 0 else -1
+            st.subheader("Ø int \n {} mm".format(diametro_int_str), anchor=False)
+        velocidade = f_velocidade(diametro_int_str, vazao_vapor_3_mcubh)
+        st.subheader("Velocidade \n {:.2f} m/s".format(velocidade), anchor=False)
+        st.info("Velocidade\n 0,5m/s")
+    with col4:
+        st.header("Àgua", anchor=False)
+        temperatura = st.number_input("Digite a temperatura", min_value=0.1, step=0.1, format="%.1f")
 
 if applicativo == "Perda de Carga":
     st.header("Perda de Carga", anchor=False)
