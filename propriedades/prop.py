@@ -760,7 +760,7 @@ if applicativo == "Perda de Carga":
                     "Recalque < 3.0m/s")
 
         with npsh4:
-            municipio = st.selectbox("Selecione o municipio", "vazio")
+            municipio = st.selectbox("Selecione o municipio", municipios_base['Município - Estado'])
             # st.dataframe(municipios_base)
             try:
                 df_altitude = get_altitude(municipio)
