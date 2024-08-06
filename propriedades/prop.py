@@ -359,7 +359,7 @@ if applicativo == "Tubulação de vapor":
         st.info("Velocidade\n 35m/s")
 
     with col3:
-        st.header("Cond", anchor=False)
+        st.header("Condensado", anchor=False)
 
         temperatura_vap_3_c = st.number_input("Temperatura °C", min_value=-273.10, value=99.00, step=0.1,format="%.1f")
         temperatura_vap_3_k = temperatura_vap_3_c + 273.15
