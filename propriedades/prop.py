@@ -257,7 +257,7 @@ if applicativo == "Tubulação de vapor":
             min_value=0, value=med_altitude, step=1, )
     abs_press = get_abspress(altitude_npsh, 101325)
     abs_bar = abs_press / (100000)
-    col1, col2, col3, col4 = st.columns(4)
+    col1, col2, col3 = st.columns(3)
     with col1:
         st.header("Vapor 1", anchor=False)
         fluido_selecionado_1 = st.selectbox("Vapor", ("Saturado","Superaquecido"), key="fluido_1")
@@ -291,7 +291,21 @@ if applicativo == "Tubulação de vapor":
             diametro_int_str = diametro_int[0] if len(diametro_int) > 0 else -1
             st.subheader("Ø int \n {} mm".format(diametro_int_str), anchor=False)
         velocidade = f_velocidade(diametro_int_str, vazao_vapor_1_mcubh)
+
+        velocidades = []
+        for index, row in df_tubo_sel.iterrows():
+            diametro = row['D interno']
+            bitola = row['Bitola nominal']
+            vel = f_velocidade(diametro, vazao_vapor_1_mcubh)
+            if vel < 35:
+                velocidades.append(
+                    {'Bitola nominal': bitola, 'Diâmetro interno (mm)': diametro, 'Velocidade (m/s)': vel})
+        df_velocidades = pd.DataFrame(velocidades)
+        #st.dataframe(df_velocidades)
+        bitola_rec_1 = df_velocidades.iloc[0][0]
         st.subheader("Velocidade \n {:.2f} m/s".format(velocidade), anchor=False)
+        if velocidade > 35:
+            st.info("Recomendado {}".format(bitola_rec_1))
         st.info("Velocidade\n 35m/s")
 
 
@@ -328,10 +342,24 @@ if applicativo == "Tubulação de vapor":
             diametro_int_str = diametro_int[0] if len(diametro_int) > 0 else -1
             st.subheader("Ø int \n {} mm".format(diametro_int_str), anchor=False)
         velocidade = f_velocidade(diametro_int_str, vazao_vapor_2_mcubh)
+        velocidades = []
+        for index, row in df_tubo_sel.iterrows():
+            diametro = row['D interno']
+            bitola = row['Bitola nominal']
+            vel = f_velocidade(diametro, vazao_vapor_2_mcubh)
+            if vel < 35:
+                velocidades.append(
+                    {'Bitola nominal': bitola, 'Diâmetro interno (mm)': diametro, 'Velocidade (m/s)': vel})
+        df_velocidades = pd.DataFrame(velocidades)
+        # st.dataframe(df_velocidades)
+        bitola_rec_2 = df_velocidades.iloc[0][0]
         st.subheader("Velocidade \n {:.2f} m/s".format(velocidade), anchor=False)
+        if velocidade > 35:
+            st.info("Recomendado {}".format(bitola_rec_2))
         st.info("Velocidade\n 35m/s")
+
     with col3:
-        st.header("Cond.", anchor=False)
+        st.header("Cond", anchor=False)
 
         temperatura_vap_3_c = st.number_input("Temperatura °C", min_value=-273.10, value=99.00, step=0.1,format="%.1f")
         temperatura_vap_3_k = temperatura_vap_3_c + 273.15
@@ -360,12 +388,23 @@ if applicativo == "Tubulação de vapor":
             diametro_int_str = diametro_int[0] if len(diametro_int) > 0 else -1
             st.subheader("Ø int \n {} mm".format(diametro_int_str), anchor=False)
         velocidade = f_velocidade(diametro_int_str, vazao_vapor_3_mcubh)
-        st.subheader("Velocidade \n {:.2f} m/s".format(velocidade), anchor=False)
-        st.info("Velocidade\n 0,5m/s")
-    with col4:
-        st.header("Àgua", anchor=False)
-        temperatura = st.number_input("Digite a temperatura", min_value=0.1, step=0.1, format="%.1f")
 
+        velocidades = []
+        for index, row in df_tubo_sel.iterrows():
+            diametro = row['D interno']
+            bitola = row['Bitola nominal']
+            vel = f_velocidade(diametro, vazao_vapor_3_mcubh)
+            if vel < 0.51:
+                velocidades.append(
+                    {'Bitola nominal': bitola, 'Diâmetro interno (mm)': diametro, 'Velocidade (m/s)': vel})
+        df_velocidades = pd.DataFrame(velocidades)
+        #st.dataframe(df_velocidades)
+        bitola_rec_3 = df_velocidades.iloc[0][0]
+        st.subheader("Velocidade \n {:.3f} m/s".format(velocidade), anchor=False)
+        if velocidade > 0.51:
+            st.info("Recomendado {}".format(bitola_rec_3))
+
+        st.info("Velocidade\n 0,5m/s")
 if applicativo == "Perda de Carga":
     st.header("Perda de Carga", anchor=False)
 
