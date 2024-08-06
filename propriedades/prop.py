@@ -44,7 +44,7 @@ if applicativo == "Propriedades Termodinâmicas":
             pressao = st.number_input("Digite a pressão", min_value=0.1,step=0.1,format="%.1f")
         with col3:
             st.header("Un.",anchor=False)
-            un_pressão = st.selectbox("Un",["MCA","Bar","Pa"],index=1)
+            un_pressão = st.selectbox("Un",["Bar","Pa"],index=1)
         with col4:
             st.header("Temp.",anchor=False)
             temperatura = st.number_input("Digite a temperatura", min_value=0.1,step=0.1,format="%.1f")
@@ -53,7 +53,7 @@ if applicativo == "Propriedades Termodinâmicas":
             un_temperatura = st.selectbox("Un.", ["°C", "K"])
 
         #obter propriedades atravéz do coolprop
-        pressão_consulta = (9806.38 * pressao) if (un_pressão == "MCA") else (100000*pressao) if (un_pressão == "Bar") else pressao
+        pressão_consulta = (100000*pressao) if (un_pressão == "Bar") else pressao
         temperatura_consulta = (273.155 + temperatura) if un_temperatura == "°C" else temperatura
         try:
             viscosidade_Pas = prop.PropsSI('VISCOSITY', 'T', temperatura_consulta, 'P', pressão_consulta, fluido_selecionado)
