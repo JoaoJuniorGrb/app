@@ -11,7 +11,7 @@ from io import BytesIO
 from scipy.optimize import fsolve
 
 #Inicial
-programas = ["Perda de Carga","Propriedades Termodinâmicas","Placa de orificio","Tubulação de vapor","Final"]
+programas = ["Perda de Carga","Propriedades Termodinâmicas","Placa de orificio","QHS","Final"]
 legendas1 = ["Cálculo de perda de carga","Fornece gráfico de propriedades termodinamicas selecionadas",'Em desenvolvimento','Em desenvolvimento',"Informações sobre o programa"]
 
 st.sidebar.header("Selecione o programa desejado")
@@ -143,7 +143,7 @@ if applicativo == "Propriedades Termodinâmicas":
         st.plotly_chart(fig)
         #st.table(grafico_df)
 
-if applicativo == "Tubulação de vapor":
+if applicativo == "QHS":
 
     def f_velocidade (diametro_int_str,carga_vazao_str):
             area_tubo = 3.1415 * ((diametro_int_str / 1000) ** 2) / 4
@@ -235,8 +235,14 @@ if applicativo == "Tubulação de vapor":
             municipios_base = [{'Nome do Município': "erro base de dados"}]
             return df_municipio
 
-    municipios_base = get_municipios()
-    municipio = st.selectbox("Selecione o municipio", municipios_base['Município - Estado'])
+
+    try:
+        municipios_base = get_municipios()
+        municipio = st.selectbox("Selecione o municipio", municipios_base['Município - Estado'])
+    except Exception as e:
+        municipios_base = "0"
+        st.success("API IBGE Indisponível")
+
     # st.dataframe(municipios_base)
     try:
         df_altitude = get_altitude(municipio)
@@ -257,9 +263,9 @@ if applicativo == "Tubulação de vapor":
             min_value=0, value=med_altitude, step=1, )
     abs_press = get_abspress(altitude_npsh, 101325)
     abs_bar = abs_press / (100000)
-    col1, col2, col3 = st.columns(3)
+    col1, col2, col3, col4, col5 = st.columns([1,1,1,1,1])
     with col1:
-        st.header("Vapor 1", anchor=False)
+        st.header("Vap. 1", anchor=False)
         fluido_selecionado_1 = st.selectbox("Vapor", ("Saturado","Superaquecido"), key="fluido_1")
         massa_vapor_1_kgh = st.number_input("Vazão [kg/h]", min_value=0.0000000001,step=0.1, format="%.1f")
 
@@ -305,12 +311,12 @@ if applicativo == "Tubulação de vapor":
         bitola_rec_1 = df_velocidades.iloc[0][0]
         st.subheader("Velocidade \n {:.2f} m/s".format(velocidade), anchor=False)
         if velocidade > 35:
-            st.info("Recomendado {}".format(bitola_rec_1))
+            st.info("Recom. {}".format(bitola_rec_1))
         st.info("Velocidade\n 35m/s")
 
 
     with col2:
-        st.header("Vapor 2", anchor=False)
+        st.header("Vap. 2", anchor=False)
         fluido_selecionado_2 = st.selectbox("Vapor", ("Saturado", "Superaquecido"), key="fluido_2")
         massa_vapor_2_kgh = st.number_input("Vazão [kg/h]", min_value=0.0000000001, step=0.1, format="%.1f",key = "massa_2")
 
@@ -355,11 +361,11 @@ if applicativo == "Tubulação de vapor":
         bitola_rec_2 = df_velocidades.iloc[0][0]
         st.subheader("Velocidade \n {:.2f} m/s".format(velocidade), anchor=False)
         if velocidade > 35:
-            st.info("Recomendado {}".format(bitola_rec_2))
+            st.info("Recom. {}".format(bitola_rec_2))
         st.info("Velocidade\n 35m/s")
 
     with col3:
-        st.header("Condensado", anchor=False)
+        st.header("Cond.", anchor=False)
 
         temperatura_vap_3_c = st.number_input("Temperatura °C", min_value=-273.10, value=99.00, step=0.1,format="%.1f")
         temperatura_vap_3_k = temperatura_vap_3_c + 273.15
@@ -402,9 +408,78 @@ if applicativo == "Tubulação de vapor":
         bitola_rec_3 = df_velocidades.iloc[0][0]
         st.subheader("Velocidade \n {:.3f} m/s".format(velocidade), anchor=False)
         if velocidade > 0.51:
-            st.info("Recomendado {}".format(bitola_rec_3))
+            st.info("Recom. {}".format(bitola_rec_3))
 
         st.info("Velocidade\n 0,5m/s")
+
+    with col4:
+            st.header("Hidro 1", anchor=False)
+            vazao_succao_mcbh = st.number_input("Vazão [m³/h]", min_value=0.0000000001, step=0.1, format="%.1f",key="sucao1")
+
+            tipo_tubo = st.selectbox("Tubo", materiais_lista, index=0, key='hidro1')
+            tipo_tubo_str = str(tipo_tubo)
+            df_tubo_sel = df_tubos[df_tubos['Material'] == tipo_tubo_str]
+            lista_bitola = df_tubo_sel['Bitola nominal'].unique().tolist()
+            rugosidade = rugosidade_data[tipo_tubo_str]
+            diametro_tubo = st.selectbox("Diâmetro comercial", lista_bitola, index=0, key='hidro2')
+            diametro_tubo_str = str(diametro_tubo)
+            if tipo_tubo_str == "Outro":
+                diametro_int = st.number_input("   Ø int [mm]", min_value=0.01, step=0.1, format="%.1f")
+                diametro_int_str = float(diametro_int)
+            if tipo_tubo_str != "Outro":
+                diametro_int = df_tubos.loc[(df_tubos['Material'] == tipo_tubo_str) & (
+                        df_tubos['Bitola nominal'] == diametro_tubo_str), 'D interno'].values
+                diametro_int_str = diametro_int[0] if len(diametro_int) > 0 else -1
+                st.subheader("Ø int \n {} mm".format(diametro_int_str), anchor=False)
+            velocidade = f_velocidade(diametro_int_str, vazao_succao_mcbh)
+
+            velocidades = []
+            for index, row in df_tubo_sel.iterrows():
+                diametro = row['D interno']
+                bitola = row['Bitola nominal']
+                vel = f_velocidade(diametro, vazao_succao_mcbh)
+                if vel < 1.5:
+                    velocidades.append(
+                        {'Bitola nominal': bitola, 'Diâmetro interno (mm)': diametro, 'Velocidade (m/s)': vel})
+            df_velocidades = pd.DataFrame(velocidades)
+            # st.dataframe(df_velocidades)
+            bitola_rec_3 = df_velocidades.iloc[0][0]
+            st.subheader("Velocidade \n {:.3f} m/s".format(velocidade), anchor=False)
+            st.info("Recom. {}".format(bitola_rec_3))
+
+    with col5:
+            st.header("Hidro 2", anchor=False)
+
+            tipo_tubo = st.selectbox("Tubo", materiais_lista, index=0, key='hidro3')
+            tipo_tubo_str = str(tipo_tubo)
+            df_tubo_sel = df_tubos[df_tubos['Material'] == tipo_tubo_str]
+            lista_bitola = df_tubo_sel['Bitola nominal'].unique().tolist()
+            rugosidade = rugosidade_data[tipo_tubo_str]
+            diametro_tubo = st.selectbox("Diâmetro comercial", lista_bitola, index=0, key='hidro4')
+            diametro_tubo_str = str(diametro_tubo)
+            if tipo_tubo_str == "Outro":
+                diametro_int = st.number_input("   Ø int [mm]", min_value=0.01, step=0.1, format="%.1f")
+                diametro_int_str = float(diametro_int)
+            if tipo_tubo_str != "Outro":
+                diametro_int = df_tubos.loc[(df_tubos['Material'] == tipo_tubo_str) & (
+                        df_tubos['Bitola nominal'] == diametro_tubo_str), 'D interno'].values
+                diametro_int_str = diametro_int[0] if len(diametro_int) > 0 else -1
+                st.subheader("Ø int \n {} mm".format(diametro_int_str), anchor=False)
+            velocidade = f_velocidade(diametro_int_str, vazao_succao_mcbh)
+
+            velocidades = []
+            for index, row in df_tubo_sel.iterrows():
+                diametro = row['D interno']
+                bitola = row['Bitola nominal']
+                vel = f_velocidade(diametro, vazao_succao_mcbh)
+                if vel < 3:
+                    velocidades.append(
+                        {'Bitola nominal': bitola, 'Diâmetro interno (mm)': diametro, 'Velocidade (m/s)': vel})
+            df_velocidades = pd.DataFrame(velocidades)
+            # st.dataframe(df_velocidades)
+            bitola_rec_3 = df_velocidades.iloc[0][0]
+            st.subheader("Velocidade \n {:.3f} m/s".format(velocidade), anchor=False)
+            st.info("Recom. {}".format(bitola_rec_3))
 if applicativo == "Perda de Carga":
     st.header("Perda de Carga", anchor=False)
 
