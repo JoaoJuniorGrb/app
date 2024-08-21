@@ -56,14 +56,16 @@ if applicativo == "Propriedades Termodinâmicas":
         pressão_consulta = (100000*pressao) if (un_pressão == "Bar") else pressao
         temperatura_consulta = (273.155 + temperatura) if un_temperatura == "°C" else temperatura
         try:
+            p_vapor = PropsSI('P', 'T', temperatura_consulta, 'Q', 1, fluido_selecionado)
+            p_vapor =   p_vapor/100000
+            texto_pvapor = "P vapor {:.3f} Bar".format(p_vapor)
+            st.subheader(texto_pvapor, anchor=False, divider="blue")
             viscosidade_Pas = prop.PropsSI('VISCOSITY', 'T', temperatura_consulta, 'P', pressão_consulta, fluido_selecionado)
             densidade = prop.PropsSI('D', 'T', temperatura_consulta, 'P', pressão_consulta, fluido_selecionado)
             qualidade = PhaseSI('P', pressão_consulta, 'T', temperatura_consulta, fluido_selecionado)
             viscosidade_cp = viscosidade_Pas*1000
             temperatura_ebulição = PropsSI('T','P', pressão_consulta,'Q',0,fluido_selecionado)
             temperatura_ebulição = temperatura_ebulição - 273.15
-            p_vapor = PropsSI('P', 'T', temperatura_consulta, 'Q', 1, fluido_selecionado)
-            p_vapor =   p_vapor/100000
             texto_viscosidade = "{:.3f} Cp".format(viscosidade_cp)
             st.subheader(texto_viscosidade,anchor=False,divider="blue")
             texto_densidade = "{:.3f} kg/m³".format(densidade)
@@ -72,8 +74,7 @@ if applicativo == "Propriedades Termodinâmicas":
             st.subheader(texto_titulo,anchor=False,divider="blue")
             texto_ebulição = "Ebulição {:.1f} °C".format(temperatura_ebulição)
             st.subheader(texto_ebulição, anchor=False,divider="blue")
-            texto_pvapor = "P vapor {:.3f} Bar".format(p_vapor)
-            st.subheader(texto_pvapor, anchor=False, divider="blue")
+            
 
         except Exception as e:
             st.subheader("Não disponível para este fluido")
