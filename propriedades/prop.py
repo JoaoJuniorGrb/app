@@ -827,7 +827,7 @@ if applicativo == "Perda de Carga":
             {'Velocidade do som': 'V'},
             {'Condutividade térmica': 'CONDUCTIVITY'}
         ]
-        lista_fluidos = prop.get_global_param_string("fluids_list").split(",")
+    lista_fluidos = prop.get_global_param_string("fluids_list").split(",")
 
         npsh1, npsh2, npsh3, npsh4 = st.columns([1, 1, 1, 2])
         with npsh1:
