@@ -815,6 +815,29 @@ if applicativo == "Perda de Carga":
 
         # st.table(df_grafico_perda)
     if metodo_carga == "Sucção/NPSH disponível":
+
+        def get_municipios():
+        url = "https://servicodados.ibge.gov.br/api/v1/localidades/municipios?orderBy=nome"
+        response = requests.get(
+            url)  # Faz uma requisição GET para a URL da API do IBGE que retorna os dados dos municípios.
+        if response.status_code == 200:  # Verifica se a resposta da requisição foi bem-sucedida (código 200).
+            municipios_base = response.json()  # Converte a resposta JSON em um dicionário Python.
+            data = []
+            for municipio in municipios_base:
+                id_municipio = municipio['id']
+                nome_municipio = municipio['nome']
+                sigla_estado = municipio['microrregiao']['mesorregiao']['UF']['sigla']
+                data.append([id_municipio, nome_municipio, sigla_estado])
+
+            df_municipio = pd.DataFrame(data, columns=['ID', 'Nome do Município', 'Sigla do Estado'])
+            df_municipio['Município - Estado'] = df_municipio['Nome do Município'] + "-" + df_municipio[
+                "Sigla do Estado"]
+            return df_municipio  # Retorna os dados dos municípios.
+        else:
+            municipios_base = [{'Nome do Município': "erro base de dados"}]
+            return df_municipio
+
+        
         municipios_base = get_municipios()
         dicionario_propriedades = [
             {'Viscosidade': 'VISCOSITY'},
