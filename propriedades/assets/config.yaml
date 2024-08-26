@@ -1,0 +1,8 @@
+credentials:
+  usernames:
+    user1:
+      name: FiedlerAuto
+      password: $2b$12$0cWzKbApke9n9mPbb0QvZeTpx7gLNQvEr.vqES.VpSnTInEtnCYDW
+    user2:
+      name: JJ
+      password: $2b$12$/WpI2QY1swInEyCjrMseTOYKd8E0.l31LllfkHIqPMGshBGToYtqy
