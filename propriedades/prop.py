@@ -875,7 +875,12 @@ if applicativo == "Perda de Carga":
                     "Recalque < 3.0m/s")
 
         with npsh4:
-            municipio = st.selectbox("Selecione o municipio", municipios_base['Município - Estado'])
+            try:
+                municipios_base = get_municipios()
+                municipio = st.selectbox("Selecione o municipio", municipios_base['Município - Estado'])
+            except Exception as e:
+                municipios_base = "0"
+                st.success("API IBGE Indisponível")
             # st.dataframe(municipios_base)
             try:
                 df_altitude = get_altitude(municipio)
