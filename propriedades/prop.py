@@ -816,7 +816,7 @@ if applicativo == "Perda de Carga":
         # st.table(df_grafico_perda)
     if metodo_carga == "Sucção/NPSH disponível":
 
-            dicionario_propriedades = [
+        dicionario_propriedades = [
             {'Viscosidade': 'VISCOSITY'},
             {'Densidade': 'D'},
             {'Entalpia': 'H'},
