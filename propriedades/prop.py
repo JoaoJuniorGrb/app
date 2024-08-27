@@ -1108,6 +1108,15 @@ if applicativo == "Final":
 #------------------------------------------------------------------------------------------------------------------------------
 
 if applicativo == "Base Instalada":
+    
+    # Criando o autenticador
+    authenticator = stauth.Authenticate(
+        config['credentials'],
+        'some_cookie_name',
+        'some_signature_key',
+        cookie_expiry_days=9000
+    )
+    
     # Exibindo a tela de login
     name, authentication_status, username = authenticator.login()
 
