@@ -15,7 +15,7 @@ import requests
 from io import BytesIO
 
 #Inicial
-programas = ["Perda de Carga","Propriedades Termodinamicas","Placa de orificio","Tubulacao de vapor","Final", "Base Instalada"]
+programas = ["Perda de Carga","Propriedades Termodinâmicas","Placa de orificio","Tubulacao de vapor","Final", "Base Instalada"]
 legendas1 = ["Cálculo de perda de carga","Fornece gráfico de propriedades termodinamicas selecionadas",'Em desenvolvimento','Em desenvolvimento',"Informações sobre o programa","ZTND"]
 
 st.sidebar.header("Selecione o programa desejado")
