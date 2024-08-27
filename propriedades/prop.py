@@ -11,7 +11,8 @@ import requests
 import streamlit_authenticator as stauth
 import yaml
 from yaml.loader import SafeLoader
-import BytesIO
+import requests
+from io import BytesIO
 
 #Inicial
 programas = ["Perda de Carga","Propriedades Termodinamicas","Placa de orificio","Tubulacao de vapor","Final", "Base Instalada"]
