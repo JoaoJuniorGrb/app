@@ -121,4 +121,3 @@ yfinance==0.2.36
 zipp==3.17.0
 scipy
 streamlit-authenticator
-yaml
