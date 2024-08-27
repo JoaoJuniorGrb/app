@@ -6,17 +6,25 @@ from PIL import Image
 import pandas as pd
 import numpy as np
 import plotly.express as px
-import requests
-from io import BytesIO
 from scipy.optimize import fsolve
+import requests
+import streamlit_authenticator as stauth
+import yaml
+from yaml.loader import SafeLoader
+
 
 #Inicial
-programas = ["Perda de Carga","Propriedades Termodinâmicas","Placa de orificio","QHS","Final"]
-legendas1 = ["Cálculo de perda de carga","Fornece gráfico de propriedades termodinamicas selecionadas",'Em desenvolvimento','Em desenvolvimento',"Informações sobre o programa"]
+programas = ["Perda de Carga","Propriedades Termodinamicas","Placa de orificio","Tubulacao de vapor","Final", "Base Instalada"]
+legendas1 = ["Cálculo de perda de carga","Fornece gráfico de propriedades termodinamicas selecionadas",'Em desenvolvimento','Em desenvolvimento',"Informações sobre o programa","ZTND"]
 
 st.sidebar.header("Selecione o programa desejado")
-applicativo = st.sidebar.radio("Seleção",programas,captions = legendas1)
+applicativo = st.sidebar.radio("Seleção",programas)
 
+# Mostra a legenda correspondente à opção selecionada
+indice_selecionado = programas.index(applicativo)
+st.sidebar.write(legendas1[indice_selecionado])
+
+#------------------------------------------------------------------------------------------------------------------------------
 
 if applicativo == "Propriedades Termodinâmicas":
     biblioteca_prop = st.selectbox("Selecione o metodo de Pesquisa",["CoolProp","Cantera","ThermoPy"])
@@ -143,6 +151,8 @@ if applicativo == "Propriedades Termodinâmicas":
             fig.update_yaxes(title_text='Densidade kg/m³')
         st.plotly_chart(fig)
         #st.table(grafico_df)
+
+#------------------------------------------------------------------------------------------------------------------------------
 
 if applicativo == "QHS":
 
@@ -481,6 +491,9 @@ if applicativo == "QHS":
             bitola_rec_3 = df_velocidades.iloc[0][0]
             st.subheader("Velocidade \n {:.3f} m/s".format(velocidade), anchor=False)
             st.info("Recom. {}".format(bitola_rec_3))
+
+#------------------------------------------------------------------------------------------------------------------------------
+
 if applicativo == "Perda de Carga":
     st.header("Perda de Carga", anchor=False)
 
@@ -1045,6 +1058,7 @@ if applicativo == "Perda de Carga":
         fig.update_yaxes(title_text='Bar')
         st.plotly_chart(fig)
 
+#------------------------------------------------------------------------------------------------------------------------------
 
 if applicativo == "Final":
     arqivo_css = 'https://github.com/JoaoJuniorGrb/app/blob/4ef7f6d97028d111ca7ddc34ff1a2e6c6e9b0a3f/propriedades/styles/main.css'
@@ -1066,8 +1080,6 @@ if applicativo == "Final":
     projetos = {":toolbox: Ferramenta 1": "ferramenta 1",
                 ":toolbox: Ferramenta 2": "ferramenta 2",
                 ":toolbox: Ferramenta 3": "ferramenta 2"}
-
-
 
     col1, col2 = st.columns(2, gap="small")
 
@@ -1091,3 +1103,23 @@ if applicativo == "Final":
     st.write(""" 	:white_check_mark: Termosul engenharia e aquecimento """,
         anchor = False
     )
+
+
+#------------------------------------------------------------------------------------------------------------------------------
+
+if applicativo == "Base Instalada":
+    # Exibindo a tela de login
+    name, authentication_status, username = authenticator.login()
+
+    if authentication_status:
+        st.write(f'Bem-vindo {name}!')
+    elif authentication_status is False:
+        st.error('Nome de usuário ou senha incorretos')
+    elif authentication_status is None:
+        st.warning('Por favor, insira seu nome de usuário e senha')
+
+    # Opcional: Adicionar uma opção de logout
+    if authentication_status:
+        if st.sidebar.button('Logout'):
+            authenticator.logout('Logout', 'sidebar')
+            st.experimental_rerun()
