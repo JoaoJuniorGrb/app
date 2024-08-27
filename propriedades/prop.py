@@ -1108,6 +1108,21 @@ if applicativo == "Final":
 #------------------------------------------------------------------------------------------------------------------------------
 
 if applicativo == "Base Instalada":
+
+    config = {
+    'credentials': {
+        'usernames': {
+            'user1': {
+                'name': 'FiedlerAuto',
+                'password': stauth.Hasher(['controledefluidos']).generate()[0]  # Hashing da senha
+            },
+            'user2': {
+                'name': 'JJ',
+                'password': stauth.Hasher(['JJ']).generate()[0]
+                }
+            }
+        }
+    }
     
     # Criando o autenticador
     authenticator = stauth.Authenticate(
