@@ -1114,11 +1114,11 @@ if applicativo == "Base Instalada":
         'usernames': {
             'user1': {
                 'name': 'FiedlerAuto',
-                'password': stauth.Hasher(['controledefluidos']).generate()[0]  # Hashing da senha
+                'password': 'controledefluidos'
             },
             'user2': {
                 'name': 'JJ',
-                'password': stauth.Hasher(['JJ']).generate()[0]
+                'password': 'JJ'
                 }
             }
         }
