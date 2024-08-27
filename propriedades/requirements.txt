@@ -120,5 +120,5 @@ yarl==1.9.4
 yfinance==0.2.36
 zipp==3.17.0
 scipy
-streamlit_authenticator
+streamlit-authenticator
 yaml
