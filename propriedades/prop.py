@@ -20,6 +20,9 @@ legendas1 = ["Cálculo de perda de carga","Fornece gráfico de propriedades term
 
 st.sidebar.header("Selecione o programa desejado")
 applicativo = st.sidebar.radio("Seleção",programas)
+usuario = st.sidebar.text_input('Usuario')
+senha = st.sidebar.text_input('Senha', type='password')
+st.sidebar.button('Login')
 
 # Mostra a legenda correspondente à opção selecionada
 indice_selecionado = programas.index(applicativo)
@@ -1109,42 +1112,4 @@ if applicativo == "Final":
 #------------------------------------------------------------------------------------------------------------------------------
 
 if applicativo == "Base Instalada":
-
-    config = {
-    'credentials': {
-        'usernames': {
-            'user1': {
-                'name': 'FiedlerAuto',
-                'password': stauth.Hasher(['controledefluidos']).generate()[0]
-            },
-            'user2': {
-                'name': 'JJ',
-                'password': stauth.Hasher(['JJ']).generate()[0]
-                }
-            }
-        }
-    }
-    
-    # Criando o autenticador
-    authenticator = stauth.Authenticate(
-        config['credentials'],
-        'some_cookie_name',
-        'some_signature_key',
-        cookie_expiry_days=9000
-    )
-    
-    # Exibindo a tela de login
-    name, authentication_status, username = authenticator.login()
-
-    if authentication_status:
-        st.write(f'Bem-vindo {name}!')
-    elif authentication_status is False:
-        st.error('Nome de usuário ou senha incorretos')
-    elif authentication_status is None:
-        st.warning('Por favor, insira seu nome de usuário e senha')
-
-    # Opcional: Adicionar uma opção de logout
-    if authentication_status:
-        if st.sidebar.button('Logout'):
-            authenticator.logout('Logout', 'sidebar')
-            st.experimental_rerun()
+    pass
