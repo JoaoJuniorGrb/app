@@ -1,0 +1,12 @@
+credentials:
+  usernames:
+    fiedler:
+      name: Fiedler Auto
+      password: '$2b$12$p4METDjFFO9JJqzuh/j2yeKz1kQoRNOaWUStQzfaVj37wmkqJU4qi'
+    joaojunior:
+      name: Joao Hering Ferreira
+      password: '$2b$12$7VPdEk6iArK6DpaTNeFLj.0DqdywzwD8B1/Ht2tIiyTWZ.gCb.sBO'
+cookie:
+  expiry_days: 30
+  key: random_signature_key # Must be string
+  name: random_cookie_name
