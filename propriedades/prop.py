@@ -1115,7 +1115,7 @@ if applicativo == "Base Instalada":
     url_login = 'https://raw.githubusercontent.com/JoaoJuniorGrb/app/main/propriedades/config.yaml?token=GHSAT0AAAAAACW7WS7BUPSKGM6AROKK35YEZW7OK6A'
     # Carregando o arquivo de configuração
     response_login = requests.get(url_login)
-    config = yaml.safe_load(response_login.content)
+    config = yaml.safe_load(response_login.text)
     
 
 
