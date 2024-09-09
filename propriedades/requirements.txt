@@ -121,7 +121,6 @@ yfinance==0.2.36
 zipp==3.17.0
 scipy
 streamlit-authenticator==0.1.5
-tenacity==8.5.0
 toml==0.10.2
 tornado==6.4.1
 typing_extensions==4.12.2
