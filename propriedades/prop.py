@@ -1116,7 +1116,7 @@ if applicativo == "Base Instalada":
     # Carregando o arquivo de configuração
     response_login = requests.get(url_login)
     config = yaml.safe_load(response_login.text)
-    
+    st.write(config)
 
 
     
