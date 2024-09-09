@@ -14,15 +14,13 @@ from yaml.loader import SafeLoader
 import requests
 from io import BytesIO
 
+
 #Inicial
 programas = ["Perda de Carga","Propriedades Termodinâmicas","Placa de orificio","QHS","Final", "Base Instalada"]
 legendas1 = ["Cálculo de perda de carga","Fornece gráfico de propriedades termodinamicas selecionadas",'Em desenvolvimento','Em desenvolvimento',"Informações sobre o programa","ZTND"]
 
 st.sidebar.header("Selecione o programa desejado")
 applicativo = st.sidebar.radio("Seleção",programas)
-usuario = st.sidebar.text_input('Usuario')
-senha = st.sidebar.text_input('Senha', type='password')
-st.sidebar.button('Login')
 
 # Mostra a legenda correspondente à opção selecionada
 indice_selecionado = programas.index(applicativo)
@@ -1112,4 +1110,46 @@ if applicativo == "Final":
 #------------------------------------------------------------------------------------------------------------------------------
 
 if applicativo == "Base Instalada":
-    pass
+     # Caminho completo para o arquivo na pasta
+    url_base = 'https://github.com/JoaoJuniorGrb/app/blob/c365d6cdf17207fc84ae2fac113fd82e07dcef43/propriedades/resultado_final.json'
+    url_login = 'https://github.com/JoaoJuniorGrb/app/blob/c365d6cdf17207fc84ae2fac113fd82e07dcef43/propriedades/config.yaml'
+    # Carregando o arquivo de configuração
+    response_login = requests.get(url_login)
+    yaml_data = yaml.safe_load(response_login.content)
+    
+
+
+    
+    # Configurando a autenticação
+    authenticator = stauth.Authenticate(
+        names=list(config['credentials']['usernames'].values()),
+        usernames=list(config['credentials']['usernames'].keys()),
+        passwords=[user['password'] for user in config['credentials']['usernames'].values()],
+        cookie_name=config['cookie']['name'],
+        key=config['cookie']['key'],
+        cookie_expiry_days=30
+
+    )
+    # Criando a interface de login
+    name, authentication_status, username = authenticator.login('Login', 'sidebar')
+
+    if authentication_status:
+        nome= name["name"]
+        st.markdown(
+            f"""
+            <h1 style="text-align: left;">
+                Bem-vindo, {nome}
+            </h1>
+            """,
+            unsafe_allow_html=True)
+        # Divisor personalizado com degradê de amarelo para azul
+        st.markdown("""
+        <hr style="border: 0; height: 16px; background: linear-gradient(to left, blue,blue,blue,blue,blue,yellow,yellow,blue);">
+        """, unsafe_allow_html=True)
+        df_original = pd.read_json(url_base)
+        st.dataframe(df_original)
+        authenticator.logout('Logout', 'sidebar')
+    elif authentication_status == False:
+        st.error('Nome de usuário ou senha incorretos')
+    elif authentication_status == None:
+        st.warning('Por favor, insira suas credenciais')
