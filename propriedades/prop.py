@@ -1111,8 +1111,8 @@ if applicativo == "Final":
 
 if applicativo == "Base Instalada":
      # Caminho completo para o arquivo na pasta
-    url_base = 'https://raw.githubusercontent.com/JoaoJuniorGrb/app/main/propriedades/resultado_final.json?token=GHSAT0AAAAAACW7WS7A6DZCAXBF6OEDCOG6ZW7RRHA'
-    url_login = 'https://raw.githubusercontent.com/JoaoJuniorGrb/app/4813a9a05b213aac404ce4037012dd6b9f39aaf2/propriedades/config.yaml?token=GHSAT0AAAAAACW7WS7BGSALY4YBPESPTMX2ZW7RQLQ'
+    url_base = 'https://raw.githubusercontent.com/JoaoJuniorGrb/app/main/propriedades/assets/resultado_final.json?token=GHSAT0AAAAAACW7WS7ANULVPYIO7GT5GWEYZW7RXEA'
+    url_login = 'https://raw.githubusercontent.com/JoaoJuniorGrb/app/main/propriedades/assets/config.yaml?token=GHSAT0AAAAAACW7WS7BRE7OIKFVYOAPWEUYZW7RWMQ'
     # Carregando o arquivo de configuração
     response_login = requests.get(url_login)
     config = yaml.safe_load(response_login.text)
