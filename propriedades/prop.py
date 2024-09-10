@@ -1111,8 +1111,8 @@ if applicativo == "Final":
 
 if applicativo == "Base Instalada":
      # Caminho completo para o arquivo na pasta
-    url_base = 'https://raw.githubusercontent.com/JoaoJuniorGrb/app/main/propriedades/assets/resultado_final.json?token=GHSAT0AAAAAACW7WS7ANULVPYIO7GT5GWEYZW7RXEA'
-    url_login = 'https://raw.githubusercontent.com/JoaoJuniorGrb/app/main/propriedades/assets/config.yaml?token=GHSAT0AAAAAACW7WS7BRE7OIKFVYOAPWEUYZW7RWMQ'
+    url_base = 'https://raw.githubusercontent.com/JoaoJuniorGrb/appestreamlit/master/resultado_final.json'
+    url_login = 'https://raw.githubusercontent.com/JoaoJuniorGrb/appestreamlit/master/config.yaml'
     # Carregando o arquivo de configuração
     response_login = requests.get(url_login)
     config = yaml.safe_load(response_login.text)
