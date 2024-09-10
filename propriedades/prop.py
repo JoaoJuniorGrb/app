@@ -17,7 +17,7 @@ from io import BytesIO
 
 #Inicial
 programas = ["Perda de Carga","Propriedades Termodinâmicas","Placa de orificio","QHS","Final", "Base Instalada"]
-legendas1 = ["Cálculo de perda de carga","Fornece gráfico de propriedades termodinamicas selecionadas",'Em desenvolvimento','Em desenvolvimento',"Informações sobre o programa","ZTND"]
+legendas1 = ["Cálculo de perda de carga","Fornece gráfico de propriedades termodinamicas selecionadas",'Em desenvolvimento','Em desenvolvimento',"Informações sobre o programa","Bombas MARK"]
 
 st.sidebar.header("Selecione o programa desejado")
 applicativo = st.sidebar.radio("Seleção",programas)
@@ -1116,7 +1116,7 @@ if applicativo == "Base Instalada":
     # Carregando o arquivo de configuração
     response_login = requests.get(url_login)
     config = yaml.safe_load(response_login.text)
-    st.write(config)
+    #st.write(config)
 
 
     
