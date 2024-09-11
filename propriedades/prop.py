@@ -1148,6 +1148,8 @@ if applicativo == "Base Instalada":
         """, unsafe_allow_html=True)
         
          #-----------------------------------------------------------dashboard------------------------------------------------
+        df_original = pd.read_json(url_base)
+        st.dataframe(df_original)
         df_original['PN'] = df_original['PN'].astype(str)
         df_bombas = df_original[df_original["Nível"] == "1"]
         df_bombas = df_original[df_original["Nível"] != "1"]
