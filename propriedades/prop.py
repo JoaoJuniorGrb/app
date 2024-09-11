@@ -1146,9 +1146,33 @@ if applicativo == "Base Instalada":
         st.markdown("""
         <hr style="border: 0; height: 16px; background: linear-gradient(to left, blue,blue,blue,blue,blue,yellow,yellow,blue);">
         """, unsafe_allow_html=True)
-        df_original = pd.read_json(url_base)
-        st.dataframe(df_original)
+        
+         #-----------------------------------------------------------dashboard------------------------------------------------
+        df_original['PN'] = df_original['PN'].astype(str)
+        df_bombas = df_original[df_original["Nível"] == "1"]
+        df_bombas = df_original[df_original["Nível"] != "1"]
+        df_peças = df_bombas.groupby('PN').size().reset_index(name='Quantidade')
+
+        df_peças = df_peças.sort_values(by='Quantidade', ascending=False).reset_index(drop=True)
+        df_peças['PN'] = '(' +  df_peças['PN'].astype(str) + ')'
+        # Mover a coluna 'Descrição (PN)' para a primeira posição
+
+
+        st.dataframe(df_bombas)
+        st.dataframe(df_peças)
+
+        # Criar gráfico básico com Plotly Express
+        bar_pecas = px.bar(df_peças, x='PN', y='Quantidade')
+
+        # Adicionar trace com marker personalizado usando Plotly Graph Objects
+        bar_pecas.add_trace(
+            go.Bar(marker=dict(cornerradius=30))
+        )
+        #st.bar_chart(df_peças, x="Quantidade", y="PN", horizontal=False)
+        st.plotly_chart(bar_pecas)
+        #-----------------------------------------------------------dashboard------------------------------------------------
         authenticator.logout('Logout', 'sidebar')
+        
     elif authentication_status == False:
         st.error('Nome de usuário ou senha incorretos')
     elif authentication_status == None:
