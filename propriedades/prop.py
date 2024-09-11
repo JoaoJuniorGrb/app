@@ -1167,9 +1167,7 @@ if applicativo == "Base Instalada":
         bar_pecas = px.bar(df_peças, x='PN', y='Quantidade')
 
         # Adicionar trace com marker personalizado usando Plotly Graph Objects
-        bar_pecas.add_trace(
-            go.Bar(marker=dict(cornerradius=30))
-        )
+        
         #st.bar_chart(df_peças, x="Quantidade", y="PN", horizontal=False)
         st.plotly_chart(bar_pecas)
         #-----------------------------------------------------------dashboard------------------------------------------------
