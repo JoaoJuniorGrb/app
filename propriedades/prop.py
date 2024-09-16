@@ -1148,31 +1148,39 @@ if applicativo == "Base Instalada":
         """, unsafe_allow_html=True)
         
          #-----------------------------------------------------------dashboard------------------------------------------------
-        df_original = pd.read_json(url_base)
-        st.dataframe(df_original)
-        df_original['PN'] = df_original['PN'].astype(str)
-        df_bombas = df_original[df_original["Nível"] == "1"]
-        df_bombas = df_original[df_original["Nível"] != "1"]
-        df_peças = df_bombas.groupby('PN').size().reset_index(name='Quantidade')
-
+              df_original['PN'] = df_original['PN'].astype(str)
+        df_original["arquivo"] = df_original["arquivo"].astype(str)
+        df_bombas = df_original[df_original["PN"].str[-3:] == df_original["arquivo"].str[-3:]]
+        df_peças = df_original[df_original["PN"].str[-3:] != df_original["arquivo"].str[-3:]]
+        df_peças['PN'] = df_peças['PN'].astype(str)
+        df_peças = df_peças['PN'].value_counts().reset_index()
+        df_peças.columns = ['PN', 'Quantidade']
         df_peças = df_peças.sort_values(by='Quantidade', ascending=False).reset_index(drop=True)
-        df_peças['PN'] = '(' +  df_peças['PN'].astype(str) + ')'
-        # Mover a coluna 'Descrição (PN)' para a primeira posição
+        df_peças = pd.merge(df_peças,df_original[['PN','Description','Descrição','arquivo']] )
+        df_peças = df_peças[['Descrição','Description', 'PN', 'Quantidade']]
+        df_peças['Descrição'] = df_peças['Descrição'].astype(str)
+        df_peças['Description'] = df_peças['Description'].astype(str)
+        df_peças['PN'] = "(" + df_peças['PN'].astype(str) + ")"
+        df_peças['DescriçãoPN'] = df_peças['Description'] + " " + df_peças['PN'].astype(str)
+        df_peças['Quantidade'] = df_peças['Quantidade'].astype(float)
+        df_peças = df_peças.drop_duplicates(subset=['PN'])
+        lista_peças = df_peças['Description'].unique()
 
 
+
+        st.subheader('bombas')
         st.dataframe(df_bombas)
+        st.subheader('peças')
+        pecas_pesquisa = st.multiselect("Itens da pesquisa:", lista_peças,lista_peças)
         st.dataframe(df_peças)
 
         # Criar gráfico básico com Plotly Express
-        bar_pecas = px.bar(df_peças, x='PN', y='Quantidade')
+        bar_pecas = px.bar(df_peças,y='Quantidade' , x='DescriçãoPN',)
 
-        # Adicionar trace com marker personalizado usando Plotly Graph Objects
-        
         #st.bar_chart(df_peças, x="Quantidade", y="PN", horizontal=False)
         st.plotly_chart(bar_pecas)
-        #-----------------------------------------------------------dashboard------------------------------------------------
-        authenticator.logout('Logout', 'sidebar')
-        
+
+
     elif authentication_status == False:
         st.error('Nome de usuário ou senha incorretos')
     elif authentication_status == None:
