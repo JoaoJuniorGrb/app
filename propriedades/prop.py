@@ -1168,10 +1168,11 @@ if applicativo == "Base Instalada":
         df_peças['Quantidade'] = df_peças['Quantidade'].astype(float)
         df_peças = df_peças.drop_duplicates(subset=['PN'])
         lista_peças = df_peças['Description'].unique()
-        df_peças_filtrado = df_peças
-        pecas_pesquisa = st.multiselect("Itens da pesquisa:", lista_peças, lista_peças)
         st.subheader('bombas')
         st.dataframe(df_bombas)
+        
+        df_peças_filtrado = df_peças
+        pecas_pesquisa = st.multiselect("Itens da pesquisa:", lista_peças, lista_peças)
         df_peças_filtrado = df_peças_filtrado[df_peças_filtrado['Description'].isin(pecas_pesquisa)]
 
 
