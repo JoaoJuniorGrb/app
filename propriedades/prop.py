@@ -1149,6 +1149,8 @@ if applicativo == "Base Instalada":
         
          #-----------------------------------------------------------dashboard------------------------------------------------
         df_original = pd.read_json(url_base)
+
+        
         df_original['PN'] = df_original['PN'].astype(str)
         df_original["arquivo"] = df_original["arquivo"].astype(str)
         df_bombas = df_original[df_original["PN"].str[-3:] == df_original["arquivo"].str[-3:]]
@@ -1166,17 +1168,19 @@ if applicativo == "Base Instalada":
         df_peças['Quantidade'] = df_peças['Quantidade'].astype(float)
         df_peças = df_peças.drop_duplicates(subset=['PN'])
         lista_peças = df_peças['Description'].unique()
-
-
-
+        df_peças_filtrado = df_peças
+        pecas_pesquisa = st.multiselect("Itens da pesquisa:", lista_peças, lista_peças)
         st.subheader('bombas')
         st.dataframe(df_bombas)
+        df_peças_filtrado = df_peças_filtrado[df_peças_filtrado['Description'].isin(pecas_pesquisa)]
+
+
         st.subheader('peças')
-        pecas_pesquisa = st.multiselect("Itens da pesquisa:", lista_peças,lista_peças)
-        st.dataframe(df_peças)
+
+        st.dataframe(df_peças_filtrado)
 
         # Criar gráfico básico com Plotly Express
-        bar_pecas = px.bar(df_peças,y='Quantidade' , x='DescriçãoPN',)
+        bar_pecas = px.bar(df_peças_filtrado,y='Quantidade' , x='DescriçãoPN',)
 
         #st.bar_chart(df_peças, x="Quantidade", y="PN", horizontal=False)
         st.plotly_chart(bar_pecas)
