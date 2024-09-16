@@ -1148,7 +1148,7 @@ if applicativo == "Base Instalada":
         """, unsafe_allow_html=True)
         
          #-----------------------------------------------------------dashboard------------------------------------------------
-              df_original['PN'] = df_original['PN'].astype(str)
+        df_original['PN'] = df_original['PN'].astype(str)
         df_original["arquivo"] = df_original["arquivo"].astype(str)
         df_bombas = df_original[df_original["PN"].str[-3:] == df_original["arquivo"].str[-3:]]
         df_peças = df_original[df_original["PN"].str[-3:] != df_original["arquivo"].str[-3:]]
