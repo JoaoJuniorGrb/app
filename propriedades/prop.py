@@ -1172,7 +1172,7 @@ if applicativo == "Base Instalada":
         st.dataframe(df_bombas)
         
         df_peças_filtrado = df_peças
-        pecas_pesquisa = st.multiselect("Itens da pesquisa:", lista_peças, lista_peças)
+        pecas_pesquisa = st.multiselect("Itens da pesquisa:", lista_peças, ['MECHANICAL SEAL', 'BEARING CARRIER', 'HOLDER BEARING', 'SPRING BEARING', 'HOUSING BEARING', 'BEARING', 'BEARING HOUSE', 'SHAFT', 'SHAFT SLEEVE', 'IMPELLER', 'IMPROSEAL', 'GASKET'])
         df_peças_filtrado = df_peças_filtrado[df_peças_filtrado['Description'].isin(pecas_pesquisa)]
 
 
