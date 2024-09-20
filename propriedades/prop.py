@@ -13,7 +13,7 @@ import yaml
 from yaml.loader import SafeLoader
 import requests
 from io import BytesIO
-
+st.set_page_config(layout="wide")
 
 #Inicial
 programas = ["Perda de Carga","Propriedades Termodinâmicas","Placa de orificio","QHS","Final", "Base Instalada"]
@@ -1147,10 +1147,10 @@ if applicativo == "Base Instalada":
         <hr style="border: 0; height: 16px; background: linear-gradient(to left, blue,blue,blue,blue,blue,yellow,yellow,blue);">
         """, unsafe_allow_html=True)
         
-         #-----------------------------------------------------------dashboard------------------------------------------------
-        df_original = pd.read_json(url_base)
+   #-----------------------------------------------------------dashboard------------------------------------------------
 
-        
+        dashboard = st.selectbox('Pesquisa',('Geral','Tag'))
+
         df_original['PN'] = df_original['PN'].astype(str)
         df_original["arquivo"] = df_original["arquivo"].astype(str)
         df_bombas = df_original[df_original["PN"].str[-3:] == df_original["arquivo"].str[-3:]]
@@ -1159,7 +1159,7 @@ if applicativo == "Base Instalada":
         df_peças = df_peças['PN'].value_counts().reset_index()
         df_peças.columns = ['PN', 'Quantidade']
         df_peças = df_peças.sort_values(by='Quantidade', ascending=False).reset_index(drop=True)
-        df_peças = pd.merge(df_peças,df_original[['PN','Description','Descrição','arquivo']] )
+        df_peças = pd.merge(df_peças,df_original[['PN','Description','Descrição','arquivo','TAG']] )
         df_peças = df_peças[['Descrição','Description', 'PN', 'Quantidade']]
         df_peças['Descrição'] = df_peças['Descrição'].astype(str)
         df_peças['Description'] = df_peças['Description'].astype(str)
@@ -1168,23 +1168,37 @@ if applicativo == "Base Instalada":
         df_peças['Quantidade'] = df_peças['Quantidade'].astype(float)
         df_peças = df_peças.drop_duplicates(subset=['PN'])
         lista_peças = df_peças['Description'].unique()
-        st.subheader('bombas')
-        st.dataframe(df_bombas)
-        
         df_peças_filtrado = df_peças
-        pecas_pesquisa = st.multiselect("Itens da pesquisa:", lista_peças, ['MECHANICAL SEAL', 'BEARING CARRIER', 'HOLDER BEARING', 'SPRING BEARING', 'HOUSING BEARING', 'BEARING', 'BEARING HOUSE', 'SHAFT', 'SHAFT SLEEVE', 'IMPELLER', 'IMPROSEAL', 'GASKET'])
-        df_peças_filtrado = df_peças_filtrado[df_peças_filtrado['Description'].isin(pecas_pesquisa)]
+        tags = df_original['TAG'].unique()
+
+        #st.subheader('bombas')
+        #st.dataframe(df_bombas)
+        # Configura a página para o modo widescreen
 
 
-        st.subheader('peças')
+        if dashboard == 'Geral':
+            #st.set_page_config(layout="wide")
+            pecas_pesquisa = st.multiselect("Itens da pesquisa:", lista_peças, ['MECHANICAL SEAL', 'BEARING CARRIER', 'HOLDER BEARING', 'SPRING BEARING', 'HOUSING BEARING', 'BEARING', 'BEARING HOUSE', 'SHAFT', 'SHAFT SLEEVE', 'IMPELLER', 'IMPROSEAL', 'GASKET'])
+            df_peças_filtrado = df_peças_filtrado[df_peças_filtrado['Description'].isin(pecas_pesquisa)]
+            st.subheader('peças')
+            dsh1, dsh2 = st.columns([0.7,0.3], gap='small')
+            with dsh1:
+                    st.dataframe(df_peças_filtrado)
 
-        st.dataframe(df_peças_filtrado)
 
-        # Criar gráfico básico com Plotly Express
-        bar_pecas = px.bar(df_peças_filtrado,y='Quantidade' , x='DescriçãoPN',)
+            # Criar gráfico básico com Plotly Express
+            with dsh2:
+                    bar_pecas = px.bar(df_peças_filtrado,y='Quantidade' , x='DescriçãoPN',)
+                    #st.bar_chart(df_peças, x="Quantidade", y="PN", horizontal=False)
+                    st.plotly_chart(bar_pecas)
 
-        #st.bar_chart(df_peças, x="Quantidade", y="PN", horizontal=False)
-        st.plotly_chart(bar_pecas)
+        if dashboard == 'Tag':
+            st.subheader('Tags')
+            tags_pesquisa = st.multiselect("Tags da pesquisa:",tags)
+            df_tags_filtrado = df_original[df_original['TAG'].isin(tags_pesquisa)]
+            pecas_pesquisa_tag = st.multiselect("Peças para Tag selecionada", lista_peças,lista_peças)
+            df_tags_filtrado = df_tags_filtrado[df_tags_filtrado['Description'].isin(pecas_pesquisa_tag)]
+            st.dataframe(df_tags_filtrado,use_container_width=True)
 
 
     elif authentication_status == False:
