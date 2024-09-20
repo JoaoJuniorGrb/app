@@ -1148,7 +1148,8 @@ if applicativo == "Base Instalada":
         """, unsafe_allow_html=True)
         
    #-----------------------------------------------------------dashboard------------------------------------------------
-
+        df_original = pd.read_json(url_base)
+        
         dashboard = st.selectbox('Pesquisa',('Geral','Tag'))
 
         df_original['PN'] = df_original['PN'].astype(str)
