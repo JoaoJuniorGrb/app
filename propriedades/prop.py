@@ -1147,8 +1147,9 @@ if applicativo == "Base Instalada":
         <hr style="border: 0; height: 16px; background: linear-gradient(to left, blue,blue,blue,blue,blue,yellow,yellow,blue);">
         """, unsafe_allow_html=True)
         
-   #-----------------------------------------------------------dashboard------------------------------------------------
         df_original = pd.read_json(url_base)
+   #-----------------------------------------------------------dashboard------------------------------------------------
+        
         
         dashboard = st.selectbox('Pesquisa',('Geral','Tag'))
 
@@ -1181,7 +1182,7 @@ if applicativo == "Base Instalada":
             #st.set_page_config(layout="wide")
             pecas_pesquisa = st.multiselect("Itens da pesquisa:", lista_peças, ['MECHANICAL SEAL', 'BEARING CARRIER', 'HOLDER BEARING', 'SPRING BEARING', 'HOUSING BEARING', 'BEARING', 'BEARING HOUSE', 'SHAFT', 'SHAFT SLEEVE', 'IMPELLER', 'IMPROSEAL', 'GASKET'])
             df_peças_filtrado = df_peças_filtrado[df_peças_filtrado['Description'].isin(pecas_pesquisa)]
-            st.subheader('peças')
+            st.subheader('peças',anchor=False)
             dsh1, dsh2 = st.columns([0.7,0.3], gap='small')
             with dsh1:
                     st.dataframe(df_peças_filtrado)
@@ -1194,7 +1195,7 @@ if applicativo == "Base Instalada":
                     st.plotly_chart(bar_pecas)
 
         if dashboard == 'Tag':
-            st.subheader('Tags')
+            st.subheader('Tags',anchor=False)
             tags_pesquisa = st.multiselect("Tags da pesquisa:",tags)
             df_tags_filtrado = df_original[df_original['TAG'].isin(tags_pesquisa)]
             pecas_pesquisa_tag = st.multiselect("Peças para Tag selecionada", lista_peças,lista_peças)
