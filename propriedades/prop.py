@@ -1148,6 +1148,7 @@ if applicativo == "Base Instalada":
         """, unsafe_allow_html=True)
         
         df_original = pd.read_json(url_base)
+        authenticator.logout('Logout', 'sidebar')
    #-----------------------------------------------------------dashboard------------------------------------------------
         
         
