@@ -1148,7 +1148,7 @@ if applicativo == "Base Instalada":
         """, unsafe_allow_html=True)
         
         df_original = pd.read_json(url_base)
-        authenticator.logout('Logout', 'sidebar')
+        
    #-----------------------------------------------------------dashboard------------------------------------------------
         
         
@@ -1177,6 +1177,7 @@ if applicativo == "Base Instalada":
         #st.subheader('bombas')
         #st.dataframe(df_bombas)
         # Configura a página para o modo widescreen
+        
 
 
         if dashboard == 'Geral':
@@ -1202,7 +1203,7 @@ if applicativo == "Base Instalada":
             pecas_pesquisa_tag = st.multiselect("Peças para Tag selecionada", lista_peças,lista_peças)
             df_tags_filtrado = df_tags_filtrado[df_tags_filtrado['Description'].isin(pecas_pesquisa_tag)]
             st.dataframe(df_tags_filtrado,use_container_width=True)
-
+        authenticator.logout('Logout', 'sidebar')
 
     elif authentication_status == False:
         st.error('Nome de usuário ou senha incorretos')
