@@ -1119,12 +1119,6 @@ if applicativo == "Base Instalada":
     #st.write(config)
 
 
-    """names=list(config['credentials']['usernames'].values()),
-        usernames=list(config['credentials']['usernames'].keys()),
-        passwords=[user['password'] for user in config['credentials']['usernames'].values()],
-        cookie_name=config['cookie']['name'],
-        key=config['cookie']['key'],
-        cookie_expiry_days=30"""
     # Configurando a autenticação
     authenticator = stauth.Authenticate(
         
