@@ -1149,8 +1149,8 @@ if applicativo == "Base Instalada":
         """, unsafe_allow_html=True)
 
     
-    # Criando a interface de login
-    name, authentication_status, username = authenticator.login('Login', 'sidebar')
+        # Criando a interface de login
+        name, authentication_status, username = authenticator.login('Login', 'sidebar')
 
       
         df_original = pd.read_json(url_base)
