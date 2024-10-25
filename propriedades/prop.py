@@ -1135,7 +1135,8 @@ if applicativo == "Base Instalada":
     name, authentication_status, username = authenticator.login('Login', 'sidebar')
 
     if authentication_status:
-        nome= name["name"]
+        
+        #nome= name["name"]
         st.markdown(
             f"""
             <h1 style="text-align: left;">
