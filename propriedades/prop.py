@@ -1133,7 +1133,7 @@ if applicativo == "Base Instalada":
     # Criando a interface de login
     name, authentication_status, username = authenticator.login('Login', 'sidebar')
 
-    if true:
+    if 1==1:
         nome= "Fiedler"
         st.markdown(
             f"""
