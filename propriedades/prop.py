@@ -1130,11 +1130,12 @@ if applicativo == "Base Instalada":
         cookie_expiry_days=config['cookie']['expiry_days']
 
     )
+
     # Criando a interface de login
     name, authentication_status, username = authenticator.login('Login', 'sidebar')
 
-    if 1==1:
-        nome= "Fiedler"
+    if authentication_status:
+        nome= name["name"]
         st.markdown(
             f"""
             <h1 style="text-align: left;">
@@ -1146,7 +1147,12 @@ if applicativo == "Base Instalada":
         st.markdown("""
         <hr style="border: 0; height: 16px; background: linear-gradient(to left, blue,blue,blue,blue,blue,yellow,yellow,blue);">
         """, unsafe_allow_html=True)
-        
+
+    
+    # Criando a interface de login
+    name, authentication_status, username = authenticator.login('Login', 'sidebar')
+
+      
         df_original = pd.read_json(url_base)
         
    #-----------------------------------------------------------dashboard------------------------------------------------
