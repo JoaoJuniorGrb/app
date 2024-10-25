@@ -1136,7 +1136,7 @@ if applicativo == "Base Instalada":
 
     if authentication_status:
         
-        #nome= name["name"]
+        nome= name
         st.markdown(
             f"""
             <h1 style="text-align: left;">
