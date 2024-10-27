@@ -14,13 +14,13 @@ from yaml.loader import SafeLoader
 import requests
 from io import BytesIO
 import firebase_admin
-from firebase_admin import credentials, storage
+from firebase_admin import credentials, storage, initialize_app
 import json
 
 st.set_page_config(layout="wide")
 
 # Copie o JSON em um dicionário diretamente no código
-cred_info = """{
+cred_info = {
     "type": "service_account",
     "project_id": "fiedlerapp2024",
     "private_key_id": "4bd9747b3f1ff529a8fae59adcf7ef3b3d425d72",
@@ -32,7 +32,7 @@ cred_info = """{
     "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
     "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-b12h7%40fiedlerapp2024.iam.gserviceaccount.com",
     "universe_domain": "googleapis.com"
-}"""
+}
 
 # Verifique se o app já foi inicializado
 if not firebase_admin._apps:
