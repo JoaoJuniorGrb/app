@@ -17,6 +17,8 @@ import firebase_admin
 from firebase_admin import credentials, storage
 import json
 
+st.set_page_config(layout="wide")
+
 # Copie o JSON em um dicionário diretamente no código
 cred_info = {
     "type": "service_account",
@@ -66,7 +68,7 @@ authenticator = stauth.Authenticate(
 # Criando a interface de login
 name, authentication_status, username = authenticator.login('Login', 'sidebar')
 
-st.set_page_config(layout="wide")
+
 
 #Inicial
 if authentication_status:
