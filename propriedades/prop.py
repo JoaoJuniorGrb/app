@@ -13,14 +13,61 @@ import yaml
 from yaml.loader import SafeLoader
 import requests
 from io import BytesIO
+import firebase_admin
+from firebase_admin import credentials, storage
+import json
+
+
+# Verifique se o app já foi inicializado
+if not firebase_admin._apps:
+    cred = credentials.Certificate(r"C:\Users\joaoj\Downloads\curso_streamlit\01-write_magic\propriedades\fiedlerapp2024-firebase-adminsdk-b12h7-4bd9747b3f.json")  # Substitua pelo caminho correto
+    firebase_admin.initialize_app(cred, {'storageBucket': 'fiedlerapp2024.appspot.com'})
+
+# Função para carregar o JSON diretamente do Storage
+def load_(nome_arquivo):
+    bucket = storage.bucket()
+    blob = bucket.blob(nome_arquivo)  # Caminho relativo dentro do bucket
+    file_data = blob.download_as_bytes()  # Baixa o conteúdo do arquivo como bytes
+    return file_data
+
+url_login = 'https://raw.githubusercontent.com/JoaoJuniorGrb/appestreamlit/master/config.yaml'
+# Carregando o arquivo de configuração
+response_login = requests.get(url_login)
+config = yaml.safe_load(response_login.text)
+#st.write(config)
+
+
+# Configurando a autenticação
+authenticator = stauth.Authenticate(
+        
+        names=[user['name'] for user in config['credentials']['usernames'].values()],
+        usernames=list(config['credentials']['usernames'].keys()),
+        passwords=[user['password'] for user in config['credentials']['usernames'].values()],
+        cookie_name=config['cookie']['name'],  # Verifique se isso está apontando para 'random_cookie_name'
+        key=config['cookie']['key'],  # Verifique se a chave 'random_signature_key' está correta
+        cookie_expiry_days=config['cookie']['expiry_days']
+
+    )
+
+# Criando a interface de login
+name, authentication_status, username = authenticator.login('Login', 'sidebar')
+
 st.set_page_config(layout="wide")
 
 #Inicial
-programas = ["Perda de Carga","Propriedades Termodinâmicas","Placa de orificio","QHS","Final", "Base Instalada"]
-legendas1 = ["Cálculo de perda de carga","Fornece gráfico de propriedades termodinamicas selecionadas",'Em desenvolvimento','Em desenvolvimento',"Informações sobre o programa","Bombas MARK"]
+if authentication_status:
+    programas = ["Perda de Carga","Propriedades Termodinâmicas","Placa de orificio","QHS","Final", "Base Instalada"]
+    legendas1 = ["Cálculo de perda de carga","Fornece gráfico de propriedades termodinamicas selecionadas",'Em desenvolvimento','Em desenvolvimento',"Informações sobre o programa","Levantamentos"]
+if not authentication_status:
+    programas = ["Perda de Carga","Propriedades Termodinâmicas","Placa de orificio","QHS","Final"]
+    legendas1 = ["Cálculo de perda de carga","Fornece gráfico de propriedades termodinamicas selecionadas",'Em desenvolvimento','Em desenvolvimento',"Informações sobre o programa"]
+
+
 
 st.sidebar.header("Selecione o programa desejado")
 applicativo = st.sidebar.radio("Seleção",programas)
+
+authenticator.logout('Logout', 'sidebar')
 
 # Mostra a legenda correspondente à opção selecionada
 indice_selecionado = programas.index(applicativo)
@@ -1110,29 +1157,11 @@ if applicativo == "Final":
 #------------------------------------------------------------------------------------------------------------------------------
 
 if applicativo == "Base Instalada":
-     # Caminho completo para o arquivo na pasta
-    url_base = 'https://raw.githubusercontent.com/JoaoJuniorGrb/appestreamlit/master/resultado_final.json'
-    url_login = 'https://raw.githubusercontent.com/JoaoJuniorGrb/appestreamlit/master/config.yaml'
-    # Carregando o arquivo de configuração
-    response_login = requests.get(url_login)
-    config = yaml.safe_load(response_login.text)
-    #st.write(config)
-
-
-    # Configurando a autenticação
-    authenticator = stauth.Authenticate(
-        
-        names=[user['name'] for user in config['credentials']['usernames'].values()],
-        usernames=list(config['credentials']['usernames'].keys()),
-        passwords=[user['password'] for user in config['credentials']['usernames'].values()],
-        cookie_name=config['cookie']['name'],  # Verifique se isso está apontando para 'random_cookie_name'
-        key=config['cookie']['key'],  # Verifique se a chave 'random_signature_key' está correta
-        cookie_expiry_days=config['cookie']['expiry_days']
-
-    )
-
-    # Criando a interface de login
-    name, authentication_status, username = authenticator.login('Login', 'sidebar')
+    # Especifica o caminho do arquivo no bucket, sem o prefixo "gs://"
+    file_path_isolutions = "isolutions/levantamento grundfos hidros_1.4"
+    file_path_cargil = "levantamento cargil/resultado_final_cargil.json"
+    resultado_final = load_(file_path_cargil).decode('utf-8')
+    isolutions = load_(file_path_isolutions).decode('utf-8')
 
     if authentication_status:
         
@@ -1149,68 +1178,118 @@ if applicativo == "Base Instalada":
         <hr style="border: 0; height: 16px; background: linear-gradient(to left, blue,blue,blue,blue,blue,yellow,yellow,blue);">
         """, unsafe_allow_html=True)
 
-    
-        # Criando a interface de login
-        name, authentication_status, username = authenticator.login('Login', 'sidebar')
+        df_original = pd.read_json(resultado_final)
+        df_isoltutions = pd.read_json(isolutions)
+        #st.dataframe(df_original)
 
-      
-        df_original = pd.read_json(url_base)
-        
+        levantamento = st.selectbox('Levantamento', ('Base instalada Cargil', 'Isolutions Grundfos'))
+              
    #-----------------------------------------------------------dashboard------------------------------------------------
+
+        if levantamento == 'Base instalada Cargil':        
+            dashboard = st.selectbox('Pesquisa',('Geral','Tag'))
+            df_original['PN'] = df_original['PN'].astype(str)
+            df_original["arquivo"] = df_original["arquivo"].astype(str)
+            df_bombas = df_original[df_original["PN"].str[-3:] == df_original["arquivo"].str[-3:]]
+            df_peças = df_original[df_original["PN"].str[-3:] != df_original["arquivo"].str[-3:]]
+            df_peças['PN'] = df_peças['PN'].astype(str)
+            df_peças = df_peças['PN'].value_counts().reset_index()
+            df_peças.columns = ['PN', 'Quantidade']
+            df_peças = df_peças.sort_values(by='Quantidade', ascending=False).reset_index(drop=True)
+            df_peças = pd.merge(df_peças,df_original[['PN','Description','Descrição','arquivo','TAG']] )
+            df_peças = df_peças[['Descrição','Description', 'PN', 'Quantidade']]
+            df_peças['Descrição'] = df_peças['Descrição'].astype(str)
+            df_peças['Description'] = df_peças['Description'].astype(str)
+            df_peças['PN'] = "(" + df_peças['PN'].astype(str) + ")"
+            df_peças['DescriçãoPN'] = df_peças['Description'] + " " + df_peças['PN'].astype(str)
+            df_peças['Quantidade'] = df_peças['Quantidade'].astype(float)
+            df_peças = df_peças.drop_duplicates(subset=['PN'])
+            lista_peças = df_peças['Description'].unique()
+            df_peças_filtrado = df_peças
+            tags = df_original['TAG'].unique()
+    
+            #st.subheader('bombas')
+            st.dataframe(df_original)
+            # Configura a página para o modo widescreen
+         
+            if dashboard == 'Geral':
+                #st.set_page_config(layout="wide")
+                pecas_pesquisa = st.multiselect("Itens da pesquisa:", lista_peças, ['MECHANICAL SEAL', 'BEARING CARRIER', 'HOLDER BEARING', 'SPRING BEARING', 'HOUSING BEARING', 'BEARING', 'BEARING HOUSE', 'SHAFT', 'SHAFT SLEEVE', 'IMPELLER', 'IMPROSEAL', 'GASKET'])
+                df_peças_filtrado = df_peças_filtrado[df_peças_filtrado['Description'].isin(pecas_pesquisa)]
+                st.subheader('peças',anchor=False)
+                dsh1, dsh2 = st.columns([0.7,0.3], gap='small')
+                with dsh1:
+                        st.dataframe(df_peças_filtrado)
+    
+    
+                # Criar gráfico básico com Plotly Express
+                with dsh2:
+                        bar_pecas = px.bar(df_peças_filtrado,y='Quantidade' , x='DescriçãoPN',)
+                        #st.bar_chart(df_peças, x="Quantidade", y="PN", horizontal=False)
+                        st.plotly_chart(bar_pecas)
+    
+            if dashboard == 'Tag':
+                st.subheader('Tags',anchor=False)
+                tags_pesquisa = st.multiselect("Tags da pesquisa:",tags)
+                df_tags_filtrado = df_original[df_original['TAG'].isin(tags_pesquisa)]
+                pecas_pesquisa_tag = st.multiselect("Peças para Tag selecionada", lista_peças,lista_peças)
+                df_tags_filtrado = df_tags_filtrado[df_tags_filtrado['Description'].isin(pecas_pesquisa_tag)]
+                st.dataframe(df_tags_filtrado,use_container_width=True)
         
         
-        dashboard = st.selectbox('Pesquisa',('Geral','Tag'))
+        if levantamento == 'Isolutions Grundfos':
+            isol1, isol2 = st.columns(2)
+            inversores_marca_isolutions = sorted(df_isoltutions['MARCA'].unique())
+            inversores_ano_isolutions = sorted(df_isoltutions['Ano'].unique())
+            inversores_pot_isolutions = sorted(df_isoltutions['POT KW UNIT'].unique())
+            with isol1:
+                marca_isolutions = st.multiselect('Marcas', inversores_marca_isolutions, inversores_marca_isolutions)
+                inicio_ano, final_ano = st.select_slider('Período',
+                                                         options=['2017', '2018', '2019', '2020', '2021', '2022',
+                                                                  '2023', '2024'], value=('2017', '2024'))
 
-        df_original['PN'] = df_original['PN'].astype(str)
-        df_original["arquivo"] = df_original["arquivo"].astype(str)
-        df_bombas = df_original[df_original["PN"].str[-3:] == df_original["arquivo"].str[-3:]]
-        df_peças = df_original[df_original["PN"].str[-3:] != df_original["arquivo"].str[-3:]]
-        df_peças['PN'] = df_peças['PN'].astype(str)
-        df_peças = df_peças['PN'].value_counts().reset_index()
-        df_peças.columns = ['PN', 'Quantidade']
-        df_peças = df_peças.sort_values(by='Quantidade', ascending=False).reset_index(drop=True)
-        df_peças = pd.merge(df_peças,df_original[['PN','Description','Descrição','arquivo','TAG']] )
-        df_peças = df_peças[['Descrição','Description', 'PN', 'Quantidade']]
-        df_peças['Descrição'] = df_peças['Descrição'].astype(str)
-        df_peças['Description'] = df_peças['Description'].astype(str)
-        df_peças['PN'] = "(" + df_peças['PN'].astype(str) + ")"
-        df_peças['DescriçãoPN'] = df_peças['Description'] + " " + df_peças['PN'].astype(str)
-        df_peças['Quantidade'] = df_peças['Quantidade'].astype(float)
-        df_peças = df_peças.drop_duplicates(subset=['PN'])
-        lista_peças = df_peças['Description'].unique()
-        df_peças_filtrado = df_peças
-        tags = df_original['TAG'].unique()
+            with isol2:
+                df_modelo = df_isoltutions[df_isoltutions['MARCA'].isin(marca_isolutions)]
+                modelos = df_modelo["MODELO"].unique()
+                pot = df_modelo["POT KW UNIT"].unique()
+                pot_isolutions = st.multiselect('Potencia',pot,pot)
+                modelo_isulutions = st.multiselect('Modelo',modelos,modelos)
+            df_isoltutions_filtrado = df_isoltutions[df_isoltutions['MARCA'].isin(marca_isolutions) & df_isoltutions['POT KW UNIT'].isin(pot_isolutions) & df_isoltutions['MODELO'].isin(modelo_isulutions)]
+            df_isoltutions_filtrado['Ano'] = df_isoltutions_filtrado['Ano'].astype(int)
+            df_isoltutions_filtrado = df_isoltutions_filtrado[(df_isoltutions_filtrado['Ano'] >=int(inicio_ano)) & (df_isoltutions_filtrado['Ano'] <= int(final_ano))]
+            # Criar uma nova coluna com o produto de 'QTD SKID' e 'QTD INV'
+            df_isoltutions_filtrado['QTD TOTAL'] = df_isoltutions_filtrado['QTD SKID'] * df_isoltutions_filtrado['QTD INV']
+            #grafico_inversores = px.bar(df_isoltutions_filtrado['QTD INV']*df_isoltutions_filtrado['MODELO'].counts, y='Quantidade', x=pot)
 
-        #st.subheader('bombas')
-        st.dataframe(df_original)
-        # Configura a página para o modo widescreen
-        
+            # Criar uma nova coluna com a contagem de modelos multiplicada pela quantidade de inversores
 
+            df_grafico_inv = df_isoltutions_filtrado.groupby(['MODELO', 'POT KW UNIT']).agg({'QTD TOTAL': 'sum'}).reset_index()
+            df_grafico_inv['POT KW UNIT'] = df_grafico_inv['POT KW UNIT'].astype(str) + "kW"
+            st.dataframe(df_isoltutions_filtrado)
+            st.dataframe(df_grafico_inv)
+            # Gerar o gráfico com Plotly Express
+            color_map = {
+                "-": "white",  # Categoria "-" com cor branca
+                "MGE": "darkblue",  # MGE com azul escuro
+                "MGE FAI": "darkblue",  # MGE com azul escuro
+                "CUE": "darkblue",  # CUE com azul escuro
+                "V20": "gray",  # V20 com cinza
+                "G120X": "gray",  # G120X com cinza
+                "POWERFLEX": "orange",  # Powerflex com laranja
+                "CFW":"yellow",
+                "FC-51":"red"
+            }
+            # Gerar o gráfico com Plotly Express, configurando explicitamente as cores e o eixo X categorizado
+            grafico_inversores = px.bar(df_grafico_inv,
+                                        x='POT KW UNIT',  # Eixo X com a potência categorizada
+                                        y='QTD TOTAL',  # Eixo Y com a quantidade de inversores
+                                        color='MODELO',  # Usar a coluna 'MODELO' para aplicar o mapeamento de cores
+                                        title='Quantidade de Inversores ',
+                                        color_discrete_map=color_map,  # Aplicar o mapeamento de cores
+                                        category_orders={"POT KW UNIT": sorted(
+                                        df_grafico_inv['POT KW UNIT'].unique())})  # Forçar ordem discreta
 
-        if dashboard == 'Geral':
-            #st.set_page_config(layout="wide")
-            pecas_pesquisa = st.multiselect("Itens da pesquisa:", lista_peças, ['MECHANICAL SEAL', 'BEARING CARRIER', 'HOLDER BEARING', 'SPRING BEARING', 'HOUSING BEARING', 'BEARING', 'BEARING HOUSE', 'SHAFT', 'SHAFT SLEEVE', 'IMPELLER', 'IMPROSEAL', 'GASKET'])
-            df_peças_filtrado = df_peças_filtrado[df_peças_filtrado['Description'].isin(pecas_pesquisa)]
-            st.subheader('peças',anchor=False)
-            dsh1, dsh2 = st.columns([0.7,0.3], gap='small')
-            with dsh1:
-                    st.dataframe(df_peças_filtrado)
-
-
-            # Criar gráfico básico com Plotly Express
-            with dsh2:
-                    bar_pecas = px.bar(df_peças_filtrado,y='Quantidade' , x='DescriçãoPN',)
-                    #st.bar_chart(df_peças, x="Quantidade", y="PN", horizontal=False)
-                    st.plotly_chart(bar_pecas)
-
-        if dashboard == 'Tag':
-            st.subheader('Tags',anchor=False)
-            tags_pesquisa = st.multiselect("Tags da pesquisa:",tags)
-            df_tags_filtrado = df_original[df_original['TAG'].isin(tags_pesquisa)]
-            pecas_pesquisa_tag = st.multiselect("Peças para Tag selecionada", lista_peças,lista_peças)
-            df_tags_filtrado = df_tags_filtrado[df_tags_filtrado['Description'].isin(pecas_pesquisa_tag)]
-            st.dataframe(df_tags_filtrado,use_container_width=True)
-        authenticator.logout('Logout', 'sidebar')
+            st.plotly_chart(grafico_inversores)
 
     elif authentication_status == False:
         st.error('Nome de usuário ou senha incorretos')
