@@ -17,10 +17,24 @@ import firebase_admin
 from firebase_admin import credentials, storage
 import json
 
+# Copie o JSON em um dicionário diretamente no código
+cred_info = {
+    "type": "service_account",
+    "project_id": "fiedlerapp2024",
+    "private_key_id": "4bd9747b3f1ff529a8fae59adcf7ef3b3d425d72",
+    "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDHkO7lD4yUF4JL\nHCYkN0ioYm+Fr5zSNKNhrSTfoYEY7IzcgaeY5PLshSftaPFzxLMZB2w0yIwymXB4\nBlGnKIEzGx3NxywJtVuj2NDxR04DuOLlCkXzecaGiyPnmDckhu9v5w+8Mce29SV+\n20O36ooztAoYgJ7XTXkNmsVRtVnyHGvV/yRrCy46PgpG9uLYapuF29hu4gn6frH9\nQ6qsDprzZA0ZrS7W6KYkNOCB7U3bl6pMrIHcxBfA4tmNslxRnPdXzmSseV9xS/zC\nOv2jrYSMiKOjGY15RwBtNSKjFxC2QbFDG56pWTnnBtLRLoymmMvKpbYlMPNapGjQ\nnkWPZPPHAgMBAAECggEAMLX3IbEIarNMScIOq0NVOEiCmRpyyDox8Or+t5kntioy\n/bWl72Neyg18X+4AFXZbEs5lgoK6+bTLJ3i/YHI6Cvvg6/PkE2CRhC4tXd8+Mxlj\nRG2cAmBkbT20H1jfiMpo0iMPi6uI6Gbw5oRlhJQ6dIFK/40ReFMAK6pt5FJEKJyJ\n8R+oh8lL0EmX2EHZMmso0zIx4l6olz/29lLR6c3Dm2Z1m+ZFL/SNbw9mvaF/eTh5\nUoqi4h6Bj65UkrDbtvW7VuZAv9/7l92vByb9B5RWCdgcfH4TA+JlibWZaMXxo+t5\naNWAuN7JLmVC/wsZu8nBEZsMnUaa5AGfJ9Ku+5W8kQKBgQDofM16UiqGQw1H6nBI\n8ueh4d3F9iUZemyHK/qHI8Ol7YfIL8TNDXJ3RBnC7ErgDgikKK+ha9sQ8Epb9FSJ\nO0mKH2KuZKyhlHgyLzilIQfhcFwKWUW+f6SmEWyNESo/f8vlp+VZ0zz0sgEIiA5S\n1nbBEq0cFtCP0RnOjIgwfdimMQKBgQDbv8hoLf0sOaWArW2rHrn3oGAXobjqStm2\nJbtN0dWEUMu2owe5M9VFCdh/BXSDYVPuLNKIXJh4WUJhNWK/RRChmQY/WTEdudrw\nReuHo7p4yTGUHhrXBH51VrdaxnNum/4VeTjSD7Deuc34wUM6o5RVSgh9X2gftGP9\n1zN1t6cjdwKBgBa+Fq+vl/9YUdVGJsPMF0KrwLEb2hc69aDneXN82SfDK7Q2kA7r\nENZ/7/E0gkKWvNuqKzwkO+LVTsDeDuL5zMDZPyMGMCkCSBvIqMbmi0nPXwGYKA1x\nmR6xt6e5FSPvEXgey33U/zKEszstbBFIb4eFly+XP8HB179v2ea8eNQRAoGAd+AE\nDEjiLkj4Ltzs0Yd+fUYghWO0gyL35vRoXAhWyMpmhqgi43YSJoo7bvdj2vOyHGCZ\nLMgOaMCQhITh7GNZsj3O+anHMGcdtyr9VE4NwCxI/nr5u0f5UDtQ5JUTjUhNcBtj\n0ru6iZWkdcm/yfJITcqIHRR5sanvTh8iNFpOM/sCgYEAg2cUHJRT+Cb7R5Q5cPz5\nbdg7QCdVgqFFZb6zlWvJnwRKGbxqYK01p3yvd8QjnY3FzwReKt/n9GIySYd0rYag\nTTaDQA/tu+gDywyRhpBIdGZVRnwmEdvr+LAnELwsbpPVqii7Xe2O5mCquRaVdTM8\nUklEdremrSP62Lyr4Orluy0=\n-----END PRIVATE KEY-----\n",
+    "client_email": "firebase-adminsdk-b12h7@fiedlerapp2024.iam.gserviceaccount.com",
+    "client_id": "102904087913041063767",
+    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+    "token_uri": "https://oauth2.googleapis.com/token",
+    "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+    "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-b12h7%40fiedlerapp2024.iam.gserviceaccount.com",
+    "universe_domain": "googleapis.com"
+}
 
 # Verifique se o app já foi inicializado
 if not firebase_admin._apps:
-    cred = credentials.Certificate(r"C:\Users\joaoj\Downloads\curso_streamlit\01-write_magic\propriedades\fiedlerapp2024-firebase-adminsdk-b12h7-4bd9747b3f.json")  # Substitua pelo caminho correto
+    cred = credentials.Certificate(cred_info)  # Substitua pelo caminho correto
     firebase_admin.initialize_app(cred, {'storageBucket': 'fiedlerapp2024.appspot.com'})
 
 # Função para carregar o JSON diretamente do Storage
