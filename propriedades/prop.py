@@ -22,7 +22,7 @@ st.set_page_config(layout="wide")
 # Copie o JSON em um dicionário diretamente no código
 cred_link = "https://firebasestorage.googleapis.com/v0/b/fiedlerapp2024.appspot.com/o/fiedlerapp2024-firebase-adminsdk-b12h7-4bd9747b3f.json?alt=media&token=990cb7e0-afaf-4476-b8ce-a28b332f6c02"
 cred_info = requests.get(cred_link)
-
+cred_info = cred_info.json()
 # Verifique se o app já foi inicializado
 if not firebase_admin._apps:
     cred = credentials.Certificate(cred_info)  # Substitua pelo caminho correto
