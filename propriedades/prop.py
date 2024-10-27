@@ -20,15 +20,14 @@ import json
 st.set_page_config(layout="wide")
 
 
-# Carrega as credenciais do st.secrets
+# Carregar credenciais do TOML e iniciar o Firebase
 firebase_creds = dict(st.secrets["firebase"])
 
-cred = credentials.Certificate(firebase_creds)
+
 # Verifique se o Firebase já está inicializado
 if not firebase_admin._apps:
-    cred = credentials.Certificate(st.secrets["firebase"])
-    initialize_app(cred, {
-        "storageBucket": "fiedlerapp2024.appspot.com"  # Substitua pelo nome do seu bucket
+    cred = credentials.Certificate(firebase_creds)
+    initialize_app(cred, {"storageBucket": "fiedlerapp2024.appspot.com"  # Substitua pelo nome do seu bucket
     })
 
 # Função para carregar o JSON diretamente do Storage
