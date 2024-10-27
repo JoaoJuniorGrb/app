@@ -1296,7 +1296,7 @@ if applicativo == "Base Instalada":
                                         category_orders={"POT KW UNIT": sorted(
                                         df_grafico_inv['POT KW UNIT'].unique())})  # Forçar ordem discreta
             st.plotly_chart(grafico_inversores, use_container_width=True)
-            st.plotly_chart(grafico_inversores)
+            
 
     elif authentication_status == False:
         st.error('Nome de usuário ou senha incorretos')
