@@ -21,9 +21,16 @@ st.set_page_config(layout="wide")
 
 # Copie o JSON em um dicionário diretamente no código
 cred_link = "https://firebasestorage.googleapis.com/v0/b/fiedlerapp2024.appspot.com/o/fiedlerapp2024-firebase-adminsdk-b12h7-4bd9747b3f.json?alt=media&token=990cb7e0-afaf-4476-b8ce-a28b332f6c02"
-cred_info = requests.get(cred_link)
-cred_info = cred_info.json()
-# Verifique se o app já foi inicializado
+# Baixa o conteúdo do JSON
+response = requests.get(cred_link)
+
+# Verifica se a requisição foi bem-sucedida
+if response.status_code == 200:
+    # Converte o conteúdo para um dicionário
+    cred_info = response.json()
+else:
+    print("Erro ao baixar o arquivo JSON:", response.status_code)
+    
 if not firebase_admin._apps:
     cred = credentials.Certificate(cred_info)  # Substitua pelo caminho correto
     firebase_admin.initialize_app(cred, {'storageBucket': 'fiedlerapp2024.appspot.com'})
