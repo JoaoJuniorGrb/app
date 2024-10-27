@@ -1273,7 +1273,7 @@ if applicativo == "Base Instalada":
             df_grafico_inv = df_isoltutions_filtrado.groupby(['MODELO', 'POT KW UNIT']).agg({'QTD TOTAL': 'sum'}).reset_index()
             df_grafico_inv['POT KW UNIT'] = df_grafico_inv['POT KW UNIT'].astype(str) + "kW"
             st.dataframe(df_isoltutions_filtrado)
-            st.dataframe(df_grafico_inv)
+            #st.dataframe(df_grafico_inv)
             # Gerar o gráfico com Plotly Express
             color_map = {
                 "-": "white",  # Categoria "-" com cor branca
