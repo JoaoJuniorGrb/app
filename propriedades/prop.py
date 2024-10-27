@@ -1182,7 +1182,7 @@ if applicativo == "Base Instalada":
         tags = df_original['TAG'].unique()
 
         #st.subheader('bombas')
-        #st.dataframe(df_bombas)
+        st.dataframe(df_original)
         # Configura a página para o modo widescreen
         
 
