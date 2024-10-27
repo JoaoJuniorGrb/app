@@ -122,3 +122,4 @@ zipp==3.17.0
 scipy
 streamlit-authenticator==0.1.5
 toml==0.10.2
+firebase-admin==6.5.0
