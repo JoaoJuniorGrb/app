@@ -27,11 +27,9 @@ cred = credentials.Certificate(firebase_creds)
 # Verifique se o Firebase já está inicializado
 if not firebase_admin._apps:
     cred = credentials.Certificate(st.secrets["firebase"])
-    initialize_app(cred)
-    
-if not firebase_admin._apps:
-    cred = credentials.Certificate(cred_info)  # Substitua pelo caminho correto
-    firebase_admin.initialize_app(cred, {'storageBucket': 'fiedlerapp2024.appspot.com'})
+    initialize_app(cred, {
+        "storageBucket": "fiedlerapp2024.appspot.com"  # Substitua pelo nome do seu bucket
+    })
 
 # Função para carregar o JSON diretamente do Storage
 def load_(nome_arquivo):
