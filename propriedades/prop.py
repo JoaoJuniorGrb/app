@@ -24,7 +24,10 @@ st.set_page_config(layout="wide")
 firebase_creds = dict(st.secrets["firebase"])
 
 cred = credentials.Certificate(firebase_creds)
-initialize_app(cred)
+# Verifique se o Firebase já está inicializado
+if not firebase_admin._apps:
+    cred = credentials.Certificate(st.secrets["firebase"])
+    initialize_app(cred)
     
 if not firebase_admin._apps:
     cred = credentials.Certificate(cred_info)  # Substitua pelo caminho correto
