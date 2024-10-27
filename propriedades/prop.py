@@ -19,7 +19,8 @@ import json
 
 st.set_page_config(layout="wide")
 
-firebase_creds = st.secrets["firebase"]
+# Carrega as credenciais do st.secrets como dicionário
+firebase_creds = dict(st.secrets["firebase"])
 cred = credentials.Certificate(firebase_creds)
 initialize_app(cred)
     
