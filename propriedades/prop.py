@@ -1295,7 +1295,7 @@ if applicativo == "Base Instalada":
                                         color_discrete_map=color_map,  # Aplicar o mapeamento de cores
                                         category_orders={"POT KW UNIT": sorted(
                                         df_grafico_inv['POT KW UNIT'].unique())})  # Forçar ordem discreta
-
+            st.plotly_chart(fig, use_container_width=True)
             st.plotly_chart(grafico_inversores)
 
     elif authentication_status == False:
