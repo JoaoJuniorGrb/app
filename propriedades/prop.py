@@ -33,7 +33,7 @@ cred_info = """{
     "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-b12h7%40fiedlerapp2024.iam.gserviceaccount.com",
     "universe_domain": "googleapis.com"
 }"""
-cred_info = json.loads(cred_info)
+
 # Verifique se o app já foi inicializado
 if not firebase_admin._apps:
     cred = credentials.Certificate(cred_info)  # Substitua pelo caminho correto
