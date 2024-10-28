@@ -55,6 +55,8 @@ authenticator = stauth.Authenticate(
         cookie_expiry_days=config['cookie']['expiry_days']
 
     )
+# Criando a interface de login
+name, authentication_status, username = authenticator.login('Login', 'sidebar')
 
 #Inicial
 if authentication_status:
@@ -63,9 +65,6 @@ if authentication_status:
 if not authentication_status:
     programas = ["Perda de Carga","Propriedades Termodinâmicas","Placa de orificio","QHS","Final"]
     legendas1 = ["Cálculo de perda de carga","Fornece gráfico de propriedades termodinamicas selecionadas",'Em desenvolvimento','Em desenvolvimento',"Informações sobre o programa"]
-
-# Criando a interface de login
-name, authentication_status, username = authenticator.login('Login', 'sidebar')
 
 
 st.sidebar.header("Selecione o programa desejado")
