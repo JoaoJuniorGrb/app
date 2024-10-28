@@ -877,7 +877,7 @@ if applicativo == "Perda de Carga":
                           , "Velocidade": "m/s"})
         # Escondendo o título do eixo Y
         fig.update_yaxes(title_text='')
-        st.plotly_chart(fig)
+        st.plotly_chart(fig, use_container_width=True)
 
         # st.table(df_grafico_perda)
     if metodo_carga == "Sucção/NPSH disponível":
@@ -1109,7 +1109,7 @@ if applicativo == "Perda de Carga":
                           , "Velocidade": "m/s"})
         # Escondendo o título do eixo Y
         fig.update_yaxes(title_text='Bar')
-        st.plotly_chart(fig)
+        st.plotly_chart(fig, use_container_width=True)
 
 #------------------------------------------------------------------------------------------------------------------------------
 
