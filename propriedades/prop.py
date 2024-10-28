@@ -17,7 +17,19 @@ import firebase_admin
 from firebase_admin import credentials, storage, initialize_app
 import json
 
-st.set_page_config(layout="wide")
+# Esconde o cabeçalho e o rodapé padrão do Streamlit
+st.set_page_config(page_title="Fiedler Automação", page_icon="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAMAAABF0y+mAAAAqFBMVEUuMo0rMI0oLY8lK48kKpARHJIwNIZiX3ZybXQFFZN2cWvUxS/55wj/7gD/8AD/8wDh0SAdJI9ZVnro1x//9gD/7wB+eGcWIJKPh1/u3ROakVZFRoExNYAmLIPz4RSFfmRNTH0qL44+QITLvTN4c2a4q0jBtD7JvD+VjV47PYfayyqqoE9gXnCIgGNbWXivpEtmY25SUnwAEJRKS34AAJamnFSflVfOwC7jtOtQAAAA/0lEQVR4AWIYcACgih60GIahAIDWippas1f7/79sXrLd4+BRlGTu/0pRNd3gNIGTTAtAhL+ITfkddVzPRxwJFHYXRshHxI/dL5vfqQlBxI7SbMGILKbl4WWwApBHXW8+d5stJLt9TDgPUJbw4B0TTODpHHysHOn78QKvK0LyIgfXjx3LqJS48pbF0fOw/0ZqFpWC+gQr27tGevVx+f4UM7/BFcABpfKLJEm8jzModxZqTboRn4Rfqttc26vRBa7/hInBF7Lp4/Sq2cMYj+enlbMRGDqep2Cy9N0Yzw/AogIn29JMwZAneRc+/S1Zq8RKaDfrlt6HLW0oQqAiw6AAACorHoO4OiwrAAAAAElFTkSuQmCC", layout="wide")
+
+#remove estilo stream lit
+remove_st_estilo = """
+    <style>
+        #MainMenu {visibility: hidden;}
+        footer {visibility: hidden;}
+        header {visibility: hidden;}
+    </style>
+"""
+
+st.markdown(remove_st_estilo,unsafe_allow_html=True)
 
 
 # Carregar credenciais do TOML e iniciar o Firebase
