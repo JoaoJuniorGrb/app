@@ -56,11 +56,6 @@ authenticator = stauth.Authenticate(
 
     )
 
-# Criando a interface de login
-name, authentication_status, username = authenticator.login('Login', 'sidebar')
-
-
-
 #Inicial
 if authentication_status:
     programas = ["Perda de Carga","Propriedades Termodinâmicas","Placa de orificio","QHS","Final", "Base Instalada"]
@@ -69,12 +64,15 @@ if not authentication_status:
     programas = ["Perda de Carga","Propriedades Termodinâmicas","Placa de orificio","QHS","Final"]
     legendas1 = ["Cálculo de perda de carga","Fornece gráfico de propriedades termodinamicas selecionadas",'Em desenvolvimento','Em desenvolvimento',"Informações sobre o programa"]
 
+# Criando a interface de login
+name, authentication_status, username = authenticator.login('Login', 'sidebar')
 
 
 st.sidebar.header("Selecione o programa desejado")
 applicativo = st.sidebar.radio("Seleção",programas)
 
-authenticator.logout('Logout', 'sidebar')
+if authentication_status == True:
+    authenticator.logout('Logout', 'sidebar')
 
 # Mostra a legenda correspondente à opção selecionada
 indice_selecionado = programas.index(applicativo)
