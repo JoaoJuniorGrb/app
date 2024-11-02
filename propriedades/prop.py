@@ -99,9 +99,9 @@ if authentication_status == True:
 indice_selecionado = programas.index(applicativo)
 
 st.sidebar.write(legendas1[indice_selecionado])
-    elif authentication_status == False:
+if authentication_status == False:
         st.error('Nome de usuário ou senha incorretos')
-    elif authentication_status == None:
+if authentication_status == None:
         st.warning('Por favor, insira suas credenciais')
 #------------------------------------------------------------------------------------------------------------------------------
 
