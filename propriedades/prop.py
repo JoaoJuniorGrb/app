@@ -1217,32 +1217,7 @@ if applicativo == "Base Instalada":
         #st.dataframe(df_original)
 
         levantamento = st.selectbox('Levantamento', ('Base instalada Cargil', 'Isolutions Grundfos'))
-#-----------------------------------------------------ordem de venda--------------------------------------------------------------
-if applicativo == "Localização de Pedidos":
-    nome = name["name"]
-    st.markdown(
-        f"""
-               <h1 style="text-align: left;">
-                   Bem-vindo, {nome}
-               </h1>
-               """,
-        unsafe_allow_html=True
-    )
-
-    # Divisor personalizado com degradê de amarelo para azul
-    st.markdown("""
-           <hr style="border: 0; height: 16px; background: linear-gradient(to left, blue,blue,blue,blue,blue,yellow,yellow,blue);">
-           """, unsafe_allow_html=True)
-
-    estoque_col_1,estoque_col_2 = st.columns([0.2,0.8])
-
-    with estoque_col_1:
-        ov_estoque =  st.text_input("OV",placeholder="Insira a ordem de venda")
-        endereco_estoque =  st.text_input("Localização",placeholder="Insira o endereço")
-        st.button("Registrar",type="secondary",use_container_width=True)
-
-    with estoque_col_2:
-        pass        
+        
 #-----------------------------------------------------------dashboard------------------------------------------------
 
         if levantamento == 'Base instalada Cargil':        
@@ -1354,3 +1329,30 @@ if applicativo == "Localização de Pedidos":
         st.error('Nome de usuário ou senha incorretos')
     elif authentication_status == None:
         st.warning('Por favor, insira suas credenciais')
+
+#-----------------------------------------------------ordem de venda--------------------------------------------------------------
+if applicativo == "Localização de Pedidos":
+    nome = name["name"]
+    st.markdown(
+        f"""
+               <h1 style="text-align: left;">
+                   Bem-vindo, {nome}
+               </h1>
+               """,
+        unsafe_allow_html=True
+    )
+
+    # Divisor personalizado com degradê de amarelo para azul
+    st.markdown("""
+           <hr style="border: 0; height: 16px; background: linear-gradient(to left, blue,blue,blue,blue,blue,yellow,yellow,blue);">
+           """, unsafe_allow_html=True)
+
+    estoque_col_1,estoque_col_2 = st.columns([0.2,0.8])
+
+    with estoque_col_1:
+        ov_estoque =  st.text_input("OV",placeholder="Insira a ordem de venda")
+        endereco_estoque =  st.text_input("Localização",placeholder="Insira o endereço")
+        st.button("Registrar",type="secondary",use_container_width=True)
+
+    with estoque_col_2:
+        pass
