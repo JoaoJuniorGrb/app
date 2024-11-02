@@ -1371,7 +1371,7 @@ if applicativo == "Localização de Pedidos":
         except Exception as e:
             return (False, "vazio")
 
-    nome = name["name"]
+    nome = name
     # URL da imagem
 
 
