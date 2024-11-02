@@ -232,7 +232,7 @@ if applicativo == "Propriedades Termodinâmicas":
         if propriedade_y == 'Densidade' and condicao_x == "Pressão":
             fig = px.line(grafico_df, x="Pressão_sel", y="Densidade")
             fig.update_yaxes(title_text='Densidade kg/m³')
-        st.plotly_chart(fig)
+        st.plotly_chart(fig, use_container_width=True)
         #st.table(grafico_df)
 
 #------------------------------------------------------------------------------------------------------------------------------
