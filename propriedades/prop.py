@@ -97,8 +97,12 @@ if authentication_status == True:
 
 # Mostra a legenda correspondente à opção selecionada
 indice_selecionado = programas.index(applicativo)
-st.sidebar.write(legendas1[indice_selecionado])
 
+st.sidebar.write(legendas1[indice_selecionado])
+    elif authentication_status == False:
+        st.error('Nome de usuário ou senha incorretos')
+    elif authentication_status == None:
+        st.warning('Por favor, insira suas credenciais')
 #------------------------------------------------------------------------------------------------------------------------------
 
 if applicativo == "Propriedades Termodinâmicas":
