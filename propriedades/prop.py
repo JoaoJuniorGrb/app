@@ -80,6 +80,22 @@ if not authentication_status:
     programas = ["Perda de Carga","Propriedades Termodinâmicas","Placa de orificio","QHS","Final"]
     legendas1 = ["Cálculo de perda de carga","Fornece gráfico de propriedades termodinamicas selecionadas",'Em desenvolvimento','Em desenvolvimento',"Informações sobre o programa"]
 
+#Inicial
+if authentication_status:
+    programas = ["Perda de Carga","Propriedades Termodinamicas","Placa de orificio","QHS","Final", "Base Instalada"]
+    legendas1 = ["Cálculo de perda de carga","Fornece gráfico de propriedades termodinamicas selecionadas",'Em desenvolvimento','Em desenvolvimento',"Informações sobre o programa","Levantamentos"]
+if not authentication_status:
+    programas = ["Perda de Carga", "Propriedades Termodinamicas",  "QHS", "Final"]
+    legendas1 = ["Cálculo de perda de carga", "Fornece gráfico de propriedades termodinamicas selecionadas",
+                  'Em desenvolvimento', "Informações sobre o programa"]
+if username == "gebien":
+    programas = ["Localização de Pedidos"]
+    legendas1 = ["Localização de pedidos a partir da O.V. com acesso a historico de alterções"]
+
+if username == "joaojunior":
+    programas = ["Perda de Carga","Propriedades Termodinamicas","Placa de orificio","QHS","Final", "Base Instalada","Localização de Pedidos"]
+    legendas1 = ["Cálculo de perda de carga","Fornece gráfico de propriedades termodinamicas selecionadas",'Em desenvolvimento','Em desenvolvimento',"Informações sobre o programa","Levantamentos","Localização de pedidos a partir da O.V. com acesso a historico de alterções"]
+
 
 st.sidebar.header("Selecione o programa desejado")
 applicativo = st.sidebar.radio("Seleção",programas)
