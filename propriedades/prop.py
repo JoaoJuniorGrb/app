@@ -18,6 +18,8 @@ from firebase_admin import credentials, storage, initialize_app
 import json
 from streamlit_autorefresh import st_autorefresh
 import time
+from datetime import datetime
+import pytz
 
 url_imagem = "https://www.madeiratotal.com.br/wp-content/uploads/2024/10/Submarca-Fiedler-01-1024x358.webp"
 # Esconde o cabeçalho e o rodapé padrão do Streamlit
@@ -1332,8 +1334,7 @@ if applicativo == "Base Instalada":
 
 #-----------------------------------------------------ordem de venda--------------------------------------------------------------
 if applicativo == "Localização de Pedidos":
-    from datetime import datetime
-    import pytz
+    
 
     # Define o fuso horário de Brasília
     fuso_horario_brasilia = pytz.timezone("America/Sao_Paulo")
