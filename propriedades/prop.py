@@ -82,10 +82,10 @@ if not authentication_status:
 
 #Inicial
 if authentication_status:
-    programas = ["Perda de Carga","Propriedades Termodinamicas","Placa de orificio","QHS","Final", "Base Instalada"]
+    programas = ["Perda de Carga","Propriedades Termodinâmicas","Placa de orificio","QHS","Final", "Base Instalada"]
     legendas1 = ["Cálculo de perda de carga","Fornece gráfico de propriedades termodinamicas selecionadas",'Em desenvolvimento','Em desenvolvimento',"Informações sobre o programa","Levantamentos"]
 if not authentication_status:
-    programas = ["Perda de Carga", "Propriedades Termodinamicas",  "QHS", "Final"]
+    programas = ["Perda de Carga", "Propriedades Termodinâmicas",  "QHS", "Final"]
     legendas1 = ["Cálculo de perda de carga", "Fornece gráfico de propriedades termodinamicas selecionadas",
                   'Em desenvolvimento', "Informações sobre o programa"]
 if username == "gebien":
@@ -93,7 +93,7 @@ if username == "gebien":
     legendas1 = ["Localização de pedidos a partir da O.V. com acesso a historico de alterções"]
 
 if username == "joaojunior":
-    programas = ["Perda de Carga","Propriedades Termodinamicas","Placa de orificio","QHS","Final", "Base Instalada","Localização de Pedidos"]
+    programas = ["Perda de Carga","Propriedades Termodinâmicas","Placa de orificio","QHS","Final", "Base Instalada","Localização de Pedidos"]
     legendas1 = ["Cálculo de perda de carga","Fornece gráfico de propriedades termodinamicas selecionadas",'Em desenvolvimento','Em desenvolvimento',"Informações sobre o programa","Levantamentos","Localização de pedidos a partir da O.V. com acesso a historico de alterções"]
 
 
