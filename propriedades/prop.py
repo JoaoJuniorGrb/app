@@ -52,7 +52,7 @@ def load_(nome_arquivo):
     file_data = blob.download_as_bytes()  # Baixa o conteúdo do arquivo como bytes
     return file_data
 
-
+config = load_("config.yaml")
 config = config.decode('utf-8')    
 config = yaml.safe_load(config.text)
 #st.write(config)
