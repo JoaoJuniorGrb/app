@@ -44,8 +44,9 @@ firebase_creds = dict(st.secrets["firebase"])
 # Verifique se o Firebase já está inicializado
 if not firebase_admin._apps:
     cred = credentials.Certificate(firebase_creds)
-    initialize_app(cred, {"storageBucket": "fiedlerapp2024.appspot.com",
-                           'databaseURL': 'https://fiedlerapp2024-default-rtdb.firebaseio.com'# Substitua pelo nome do seu bucket
+    firebase_admin.initialize_app(cred, {
+        'storageBucket': 'fiedlerapp2024.appspot.com',
+        'databaseURL': 'https://fiedlerapp2024-default-rtdb.firebaseio.com'
     })
 
 # Função para carregar o JSON diretamente do Storage
