@@ -52,10 +52,8 @@ def load_(nome_arquivo):
     file_data = blob.download_as_bytes()  # Baixa o conteúdo do arquivo como bytes
     return file_data
 
-url_login = 'https://raw.githubusercontent.com/JoaoJuniorGrb/appestreamlit/master/config.yaml'
-# Carregando o arquivo de configuração
-response_login = requests.get(url_login)
-config = yaml.safe_load(response_login.text)
+config = load_("config.yaml")
+config = yaml.safe_load(config.text)
 #st.write(config)
 
 
