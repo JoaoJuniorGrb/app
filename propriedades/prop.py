@@ -16,6 +16,8 @@ from io import BytesIO
 import firebase_admin
 from firebase_admin import credentials, storage, initialize_app
 import json
+from streamlit_autorefresh import st_autorefresh
+import time
 
 url_imagem = "https://www.madeiratotal.com.br/wp-content/uploads/2024/10/Submarca-Fiedler-01-1024x358.webp"
 # Esconde o cabeçalho e o rodapé padrão do Streamlit
@@ -1328,7 +1330,53 @@ if applicativo == "Base Instalada":
 
 #-----------------------------------------------------ordem de venda--------------------------------------------------------------
 if applicativo == "Localização de Pedidos":
-    nome= name
+    from datetime import datetime
+    import pytz
+
+    # Define o fuso horário de Brasília
+    fuso_horario_brasilia = pytz.timezone("America/Sao_Paulo")
+    # Obtém a data e hora atuais no fuso horário de Brasília
+    data_atual = datetime.now(fuso_horario_brasilia)
+
+
+    # Função para enviar dados para o Firebase RTDB
+    def enviar_rtdb(referencia_1,referencia_2,data,endereco,hora,nome):
+        try:
+            # Constrói o caminho dinâmico para o Firebase RTDB
+            ref = db.reference(f"{referencia_1}/{referencia_2}")
+
+            # Dados a serem enviados
+            dados = {
+                "data": str(data),
+                "endereco": str(endereco),
+                "hora": str(hora),
+                "nome": str(nome),
+            }
+
+            # Envia os dados para o Firebase
+            ref.set(dados)
+
+            return True  # Retorna True se a operação foi bem-sucedida
+
+        except Exception as e:
+            return False
+
+    def consulta_rtdb (referencia):
+        try:
+            # Constrói o caminho dinâmico para o Firebase RTDB
+            ref = db.reference(referencia)
+            dados_estoque = ref.get()
+            return (True,dados_estoque)
+
+        except Exception as e:
+            return (False, "vazio")
+
+    nome = name["name"]
+    # URL da imagem
+
+
+    # Exibir a imagem
+
     st.markdown(
         f"""
                <h1 style="text-align: left;">
@@ -1346,9 +1394,34 @@ if applicativo == "Localização de Pedidos":
     estoque_col_1,estoque_col_2 = st.columns([0.2,0.8])
 
     with estoque_col_1:
+        status = False
+        # Inicialize o estado dos campos de texto se ainda não estiverem definidos
+        if "ov_estoque" not in st.session_state:
+            st.session_state.ov_estoque = ""
+        if "endereco_estoque" not in st.session_state:
+            st.session_state.endereco_estoque = ""
+        # Função para limpar o conteúdo dos campos ao focar
+        def clear_text(field_name):
+            st.session_state[field_name] = ""
+
         ov_estoque =  st.text_input("OV",placeholder="Insira a ordem de venda")
         endereco_estoque =  st.text_input("Localização",placeholder="Insira o endereço")
-        st.button("Registrar",type="secondary",use_container_width=True)
+        registrar = st.button("Registrar",type="secondary",use_container_width=True)
+        if registrar:
+            data = str(data_atual.strftime("%d/%m/%Y")) # Formato: dd/mm/aaaa)
+            hora = str(data_atual.strftime("%H:%M"))
+            status = enviar_rtdb("estoque",ov_estoque, data, endereco_estoque, hora, nome)
+            if status:
+                st.success(f"OV:{ov_estoque} ({hora}-{data})",icon="✅")
 
+            if not status:
+                st.success(f"{ov_estoque} falha!")
     with estoque_col_2:
-        pass
+        df_stoque_status,dc_estoque  = consulta_rtdb ("estoque")
+        df_estoque = pd.DataFrame.from_dict(dc_estoque,orient="index").reset_index()
+        df_estoque.rename(columns={"index": "OV"},inplace=True)
+        df_estoque = df_estoque[["OV", "endereco", "hora", "data", "nome"]]
+
+        # Verifica se há atualizações a cada intervalo (por exemplo, 5 segundos)
+        st_autorefresh(interval=3000, limit=None, key="firebase_update")
+        st.dataframe(df_estoque,use_container_width=True)
