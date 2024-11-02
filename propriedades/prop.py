@@ -1332,7 +1332,7 @@ if applicativo == "Base Instalada":
 
 #-----------------------------------------------------ordem de venda--------------------------------------------------------------
 if applicativo == "Localização de Pedidos":
-    nome = "name"
+    nome= name
     st.markdown(
         f"""
                <h1 style="text-align: left;">
