@@ -84,7 +84,7 @@ if name == "Fellipe Gebien":
     programas = ["Localização de Pedidos"]
     legendas1 = ["Localização de pedidos a partir da O.V. com acesso a historico de alterções"]
 
-if name == "joaojunior":
+if name == "Joao Hering Ferreira":
     programas = ["Perda de Carga","Propriedades Termodinâmicas","Placa de orificio","QHS","Final", "Base Instalada","Localização de Pedidos"]
     legendas1 = ["Cálculo de perda de carga","Fornece gráfico de propriedades termodinamicas selecionadas",'Em desenvolvimento','Em desenvolvimento',"Informações sobre o programa","Levantamentos","Localização de pedidos a partir da O.V. com acesso a historico de alterções"]
 
