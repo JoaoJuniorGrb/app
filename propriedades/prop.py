@@ -20,6 +20,10 @@ from streamlit_autorefresh import st_autorefresh
 import time
 from datetime import datetime
 import pytz
+from firebase_admin import db
+import firebase_admin
+from firebase_admin import credentials, storage
+import json
 
 url_imagem = "https://www.madeiratotal.com.br/wp-content/uploads/2024/10/Submarca-Fiedler-01-1024x358.webp"
 # Esconde o cabeçalho e o rodapé padrão do Streamlit
