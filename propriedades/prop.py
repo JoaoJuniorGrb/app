@@ -54,7 +54,7 @@ def load_(nome_arquivo):
 
 config = load_("config.yaml")
 config = config.decode('utf-8')    
-config = yaml.safe_load(config.text)
+config = yaml.safe_load(config)
 #st.write(config)
 
 
