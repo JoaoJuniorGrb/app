@@ -1430,5 +1430,5 @@ if applicativo == "Localização de Pedidos":
         df_estoque = df_estoque[["OV", "endereco", "hora", "data", "nome"]]
 
         # Verifica se há atualizações a cada intervalo (por exemplo, 5 segundos)
-        st_autorefresh(interval=3000, limit=None, key="firebase_update")
+        st_autorefresh(interval=5000, limit=None, key="firebase_update")
         st.dataframe(df_estoque,use_container_width=True)
