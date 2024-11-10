@@ -1,3 +1,4 @@
+$ pip install streamlit --upgrade
 import streamlit as st
 import CoolProp.CoolProp as prop
 from CoolProp.CoolProp import PropsSI,PhaseSI
