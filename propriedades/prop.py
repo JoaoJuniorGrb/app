@@ -24,6 +24,7 @@ from firebase_admin import db
 import firebase_admin
 from firebase_admin import credentials, storage
 import json
+import control as ctrl
 
 url_imagem = "https://www.madeiratotal.com.br/wp-content/uploads/2024/10/Submarca-Fiedler-01-1024x358.webp"
 # Esconde o cabeçalho e o rodapé padrão do Streamlit
@@ -84,19 +85,19 @@ name, authentication_status, username = authenticator.login('Login', 'sidebar')
 
 #Inicial
 if authentication_status:
-    programas = ["Perda de Carga","Propriedades Termodinâmicas","Placa de orificio","QHS","Final", "Base Instalada"]
-    legendas1 = ["Cálculo de perda de carga","Fornece gráfico de propriedades termodinamicas selecionadas",'Em desenvolvimento','Em desenvolvimento',"Informações sobre o programa","Levantamentos"]
+    programas = ["Perda de Carga","Propriedades Termodinâmicas","Placa de orificio","QHS","Sistemas de controle","Final", "Base Instalada"]
+    legendas1 = ["Cálculo de perda de carga","Fornece gráfico de propriedades termodinamicas selecionadas",'Em desenvolvimento','Em desenvolvimento','Em desenvolvimento',"Informações sobre o programa","Levantamentos"]
 if not authentication_status:
-    programas = ["Perda de Carga", "Propriedades Termodinâmicas",  "QHS", "Final"]
+    programas = ["Perda de Carga", "Propriedades Termodinâmicas",  "QHS","Sistemas de controle", "Final"]
     legendas1 = ["Cálculo de perda de carga", "Fornece gráfico de propriedades termodinamicas selecionadas",
-                  'Em desenvolvimento', "Informações sobre o programa"]
+                  'Em desenvolvimento','Em desenvolvimento', "Informações sobre o programa"]
 if name == "Fellipe Gebien":
     programas = ["Localização de Pedidos"]
     legendas1 = ["Localização de pedidos a partir da O.V. com acesso a historico de alterções"]
 
 if name == "Joao Hering Ferreira":
-    programas = ["Perda de Carga","Propriedades Termodinâmicas","Placa de orificio","QHS","Final", "Base Instalada","Localização de Pedidos"]
-    legendas1 = ["Cálculo de perda de carga","Fornece gráfico de propriedades termodinamicas selecionadas",'Em desenvolvimento','Em desenvolvimento',"Informações sobre o programa","Levantamentos","Localização de pedidos a partir da O.V. com acesso a historico de alterções"]
+    programas = ["Perda de Carga","Propriedades Termodinâmicas","Placa de orificio","QHS","Sistemas de controle","Final", "Base Instalada","Localização de Pedidos"]
+    legendas1 = ["Cálculo de perda de carga","Fornece gráfico de propriedades termodinamicas selecionadas",'Em desenvolvimento','Em desenvolvimento','Em desenvolvimento',"Informações sobre o programa","Levantamentos","Localização de pedidos a partir da O.V. com acesso a historico de alterções"]
 
 
 st.sidebar.header("Selecione o programa desejado")
@@ -1432,3 +1433,106 @@ if applicativo == "Localização de Pedidos":
         # Verifica se há atualizações a cada intervalo (por exemplo, 5 segundos)
         st_autorefresh(interval=5000, limit=None, key="firebase_update")
         st.dataframe(df_estoque,use_container_width=True)
+        
+if applicativo == "Sistemas de controle":
+    metodo_controle = st.selectbox("Metodo",["Classico","Espaço de estados"])
+    if metodo_controle == "Classico":
+        # Adiciona CSS para centralizar a imagem
+        st.markdown(
+            """
+            <style>
+            .centered-image {
+                display: block;
+                margin-left: auto;
+                margin-right: auto;
+            }
+            </style>
+            """,
+            unsafe_allow_html=True
+        )
+
+        # Exibe a imagem com a classe CSS para centralizar
+        st.image(
+            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT_QT6rPDPR6BIvrmQE1p6QgZOCxRN1tA6qrw&s",
+            caption="Diagrama de blocos referência",
+            use_column_width=True,
+            output_format="auto"
+        )
+        clas_contr_1,clas_contr_2,clas_contr_3,clas_contr_4 = st.columns([0.4,0.5,0.4,1])
+
+        with clas_contr_1:
+            numerador_G = st.text_input("Numerador do sistema G(s)", "1", key="numerador_G")
+            denominador_G = st.text_input("Numerador do sistema G(s)", "1,1,1", key="denominador_G")
+            # Conversão dos inputs de texto para listas numéricas
+            numerador_g = list(map(float, numerador_G.split(",")))
+            denominador_g = list(map(float, denominador_G.split(",")))
+            realimentacao = st.checkbox("Realimentado")
+        with clas_contr_2:
+            if realimentacao:
+                    numerador_L = st.text_input("Numerador da realimentação L(s)", "1", key="numerador_L")
+                    denominador_L = st.text_input("Denomidor da realimentação L(s)", "1", key="denominador_L")
+                    # Conversão dos inputs de texto para listas numéricas
+                    numerador_l = list(map(float, numerador_L.split(",")))
+                    denominador_l = list(map(float, denominador_L.split(",")))
+            if not realimentacao:
+                    numerador_C = st.text_input("Numerador controlador C(s) ", "1", key="numerador_C")
+                    denominador_C = st.text_input("Denomidor controlador C(s) ", "1", key="denominador_C")
+                    # Conversão dos inputs de texto para listas numéricas
+                    numerador_c = list(map(float, numerador_C.split(",")))
+                    denominador_c = list(map(float, denominador_C.split(",")))
+            sinal_entrada = st.selectbox("Sinal de Entrada", ["Degrau","Rampa","Senoide"])
+
+        with clas_contr_3:
+            if realimentacao:
+                numerador_C = st.text_input("Numerador controlador C(s) ", "1")
+                denominador_C = st.text_input("Denomidor controlador C(s) ", "1")
+                # Conversão dos inputs de texto para listas numéricas
+                numerador_c = list(map(float, numerador_C.split(",")))
+                denominador_c = list(map(float, denominador_C.split(",")))
+                limite = st.number_input("Limite simulação",min_value=1,value=600)
+            if not realimentacao:
+                pass
+
+        with clas_contr_4:
+            tempo_simulacao =(st.slider("Tempo de simulação (segundos)",min_value=1,step=1, max_value=limite))
+            resolucao_simulacao =(st.slider("Resolução (pontos)",min_value=10,step=1, max_value=100000))
+
+        # Definição das funções de transferência
+        g_func = ctrl.tf(numerador_g, denominador_g)
+
+        if realimentacao:
+            l_func = ctrl.tf(numerador_l, denominador_l)
+            c_func = ctrl.tf(numerador_c, denominador_c)
+            malha_aberta = c_func * g_func
+            sistema_final = ctrl.feedback(malha_aberta, l_func)
+        else:
+            c_func = ctrl.tf(numerador_c, denominador_c)
+            malha_aberta = c_func * g_func
+            sistema_final = malha_aberta
+
+        # Definição do tempo de simulação como um array de numpy
+        tempo = np.linspace(0, tempo_simulacao, resolucao_simulacao)
+
+        # Geração do sinal de entrada
+        if sinal_entrada == "Degrau":
+            u = np.ones_like(tempo)  # Degrau unitário
+        elif sinal_entrada == "Rampa":
+            u = tempo  # Sinal de rampa
+        elif sinal_entrada == "Senoide":
+            u = np.sin(2 * np.pi * 0.5 * tempo)  # Sinal senoidal de frequência 0.5 Hz
+
+        # Simulação da resposta do sistema ao sinal de entrada
+        tempo, resposta = ctrl.forced_response(sistema_final, T=tempo, U=u)
+
+        # Criação do gráfico com Plotly
+        fig = go.Figure()
+        fig.add_trace(go.Scatter(x=tempo, y=resposta, mode='lines', name='Resposta do Sistema'))
+        fig.add_trace(go.Scatter(x=tempo, y=u, mode='lines', name='Sinal de Entrada', line=dict(dash='dash')))
+        fig.update_layout(
+            title=f'Resposta do Sistema ao Sinal de Entrada ({sinal_entrada})',
+            xaxis_title='Tempo (s)',
+            yaxis_title='Amplitude'
+        )
+
+        # Exibição do gráfico no Streamlit
+        st.plotly_chart(fig)
