@@ -90,7 +90,7 @@ soupsieve==2.5
 st-annotated-text==4.0.1
 stack-data==0.6.3
 statsmodels==0.14.1
-streamlit==1.30.0
+streamlit==1.40.0
 streamlit-camera-input-live==0.2.0
 streamlit-card==1.0.0
 streamlit-embedcode==0.1.2
@@ -125,3 +125,4 @@ toml==0.10.2
 firebase-admin==6.5.0
 datetime
 streamlit-autorefresh==1.0.1
+control==0.9.0
