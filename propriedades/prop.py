@@ -1458,7 +1458,7 @@ if applicativo == "Sistemas de controle":
             use_column_width=True,
             output_format="auto"
         )
-        clas_contr_1,clas_contr_2,clas_contr_3,clas_contr_4 = st.columns([0.4,0.5,0.4,1])
+        clas_contr_1,clas_contr_2,clas_contr_3,clas_contr_4 = st.columns([0.5,0.5,0.5,0.6])
 
         with clas_contr_1:
             numerador_G = st.text_input("Numerador do sistema G(s)", "1", key="numerador_G")
