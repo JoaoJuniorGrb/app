@@ -1462,7 +1462,7 @@ if applicativo == "Sistemas de controle":
 
         with clas_contr_1:
             numerador_G = st.text_input("Numerador do sistema G(s)", "1", key="numerador_G")
-            denominador_G = st.text_input("Numerador do sistema G(s)", "1,1,1", key="denominador_G")
+            denominador_G = st.text_input("Denominador do sistema G(s)", "1,1,1", key="denominador_G")
             # Conversão dos inputs de texto para listas numéricas
             numerador_g = list(map(float, numerador_G.split(",")))
             denominador_g = list(map(float, denominador_G.split(",")))
@@ -1470,13 +1470,13 @@ if applicativo == "Sistemas de controle":
         with clas_contr_2:
             if realimentacao:
                     numerador_L = st.text_input("Numerador da realimentação L(s)", "1", key="numerador_L")
-                    denominador_L = st.text_input("Denomidor da realimentação L(s)", "1", key="denominador_L")
+                    denominador_L = st.text_input("Denominador da realimentação L(s)", "1", key="denominador_L")
                     # Conversão dos inputs de texto para listas numéricas
                     numerador_l = list(map(float, numerador_L.split(",")))
                     denominador_l = list(map(float, denominador_L.split(",")))
             if not realimentacao:
                     numerador_C = st.text_input("Numerador controlador C(s) ", "1", key="numerador_C")
-                    denominador_C = st.text_input("Denomidor controlador C(s) ", "1", key="denominador_C")
+                    denominador_C = st.text_input("Denominador controlador C(s) ", "1", key="denominador_C")
                     # Conversão dos inputs de texto para listas numéricas
                     numerador_c = list(map(float, numerador_C.split(",")))
                     denominador_c = list(map(float, denominador_C.split(",")))
@@ -1485,7 +1485,7 @@ if applicativo == "Sistemas de controle":
         with clas_contr_3:
             if realimentacao:
                 numerador_C = st.text_input("Numerador controlador C(s) ", "1")
-                denominador_C = st.text_input("Denomidor controlador C(s) ", "1")
+                denominador_C = st.text_input("Denominador controlador C(s) ", "1")
                 # Conversão dos inputs de texto para listas numéricas
                 numerador_c = list(map(float, numerador_C.split(",")))
                 denominador_c = list(map(float, denominador_C.split(",")))
