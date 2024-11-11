@@ -25,6 +25,7 @@ import firebase_admin
 from firebase_admin import credentials, storage
 import json
 import control as ctrl
+import plotly.graph_objects as go
 
 url_imagem = "https://www.madeiratotal.com.br/wp-content/uploads/2024/10/Submarca-Fiedler-01-1024x358.webp"
 # Esconde o cabeçalho e o rodapé padrão do Streamlit
@@ -1489,8 +1490,9 @@ if applicativo == "Sistemas de controle":
                 numerador_c = list(map(float, numerador_C.split(",")))
                 denominador_c = list(map(float, denominador_C.split(",")))
                 limite = st.number_input("Limite simulação",min_value=1,value=600)
+                
             if not realimentacao:
-                pass
+                limite = st.number_input("Limite simulação",min_value=1,value=600)
 
         with clas_contr_4:
             tempo_simulacao =(st.slider("Tempo de simulação (segundos)",min_value=1,step=1, max_value=limite))
