@@ -86,18 +86,18 @@ name, authentication_status, username = authenticator.login('Login', 'sidebar')
 
 #Inicial
 if authentication_status:
-    programas = ["Perda de Carga","Propriedades Termodinâmicas","Placa de orificio","QHS","Sistemas de controle","Final", "Base Instalada"]
-    legendas1 = ["Cálculo de perda de carga","Fornece gráfico de propriedades termodinamicas selecionadas",'Em desenvolvimento','Em desenvolvimento','Em desenvolvimento',"Informações sobre o programa","Levantamentos"]
+    programas = ["Perda de Carga",'Equações de afinidade',"Propriedades Termodinâmicas","Placa de orificio","QHS","Sistemas de controle","Final", "Base Instalada"]
+    legendas1 = ["Cálculo de perda de carga",'Em desenvolvimento',"Fornece gráfico de propriedades termodinamicas selecionadas",'Em desenvolvimento','Em desenvolvimento','Em desenvolvimento',"Informações sobre o programa","Levantamentos"]
 if not authentication_status:
-    programas = ["Perda de Carga", "Propriedades Termodinâmicas",  "QHS","Sistemas de controle", "Final"]
-    legendas1 = ["Cálculo de perda de carga", "Fornece gráfico de propriedades termodinamicas selecionadas",
+    programas = ["Perda de Carga",'Equações de afinidade', "Propriedades Termodinâmicas",  "QHS","Sistemas de controle", "Final"]
+    legendas1 = ["Cálculo de perda de carga",'Em desenvolvimento', "Fornece gráfico de propriedades termodinamicas selecionadas",
                   'Em desenvolvimento','Em desenvolvimento', "Informações sobre o programa"]
 if name == "Fellipe Gebien":
     programas = ["Localização de Pedidos"]
     legendas1 = ["Localização de pedidos a partir da O.V. com acesso a historico de alterções"]
 
 if name == "Joao Hering Ferreira":
-    programas = ["Perda de Carga","Propriedades Termodinâmicas","Placa de orificio","QHS","Sistemas de controle","Final", "Base Instalada","Localização de Pedidos"]
+    programas = ["Perda de Carga",'Em desenvolvimento','Equações de afinidade',"Propriedades Termodinâmicas","Placa de orificio","QHS","Sistemas de controle","Final", "Base Instalada","Localização de Pedidos"]
     legendas1 = ["Cálculo de perda de carga","Fornece gráfico de propriedades termodinamicas selecionadas",'Em desenvolvimento','Em desenvolvimento','Em desenvolvimento',"Informações sobre o programa","Levantamentos","Localização de pedidos a partir da O.V. com acesso a historico de alterções"]
 
 
@@ -1565,3 +1565,51 @@ if applicativo == "Sistemas de controle":
         # Exibição do gráfico no Streamlit
         st.plotly_chart(fig)
 
+if applicativo == 'Equações de afinidade':
+    # Exibe a imagem com a classe CSS para centralizar
+        
+    afin_1, afin_2, afin_3 = st.columns(3)
+
+    with afin_1:
+        st.header("Vazão")
+        st.image("https://omel.com.br/wp-content/uploads/2024/02/leis-de-afinidade-01-jpg.webp",caption="D diametro rotor / N RPM",
+                use_column_width=True,
+                output_format="auto")
+        relacao_b1 = st.number_input("Rotação N1 | Rotor D1", min_value=0, max_value=10000)
+        relacao_b2 = st.number_input("Rotação N2 | Rotor D2", min_value=0, max_value=10000)
+        linha_bomba = st.number_input("Pontos", min_value=3)
+        relacao_n = (relacao_b2/relacao_b1) 
+
+    with afin_2:
+        st.header("Altura man.")
+        st.image("https://omel.com.br/wp-content/uploads/2024/02/leis-de-afinidade-02-jpg.webp",
+                caption="D diametro rotor / N RPM",
+                use_column_width=True,
+                output_format="auto")
+        
+        data = {'Altura B1': [0.0]*linha_bomba, 'Vazão B1': [0.0]*linha_bomba,'Potencia B1': [0.0]*linha_bomba}
+        df_pontos_de_trabalho = pd.DataFrame(data)
+        edited_df = st.data_editor(df_pontos_de_trabalho,hide_index=True, use_container_width=True)
+    with afin_3:
+        st.header("Potencia")
+        st.image(
+                "https://omel.com.br/wp-content/uploads/2024/02/leis-de-afinidade-03-jpg.webp",
+                caption="D diametro rotor / N RPM",
+                use_column_width=True,
+                output_format="auto")
+        df_bomba_nova  = edited_df
+        df_bomba_nova["Altura B2"] = df_bomba_nova["Altura B1"]*relacao_n**2
+        df_bomba_nova["Vazão B2"] = df_bomba_nova["Vazão B1"]*relacao_n
+        df_bomba_nova["Potencia B2"] = df_bomba_nova["Potencia B1"]*relacao_n**3
+        st.dataframe(df_bomba_nova[["Vazão B2","Altura B2","Potencia B2"]], hide_index=True, use_container_width=True)
+        
+
+        
+    curva_bomba = px.line(df_bomba_nova, x="Vazão B2", y="Altura B2")
+    # Adicionar a segunda linha 
+    curva_bomba.add_trace(go.Scatter(x=df_bomba_nova['Vazão B1'], y=df_bomba_nova['Altura B1'], mode='lines', name='B1'))
+    curva_bomba.update_layout(xaxis_title='Vazão',yaxis_title='Altura manometrica')
+
+
+
+    st.plotly_chart(curva_bomba, use_container_width=True)
