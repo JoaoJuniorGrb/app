@@ -1280,6 +1280,9 @@ if applicativo == "Base Instalada":
         
         
         if levantamento == 'Isolutions Grundfos':
+            df_isoltutions['POT KW UNIT VALOR'] = df_isoltutions['POT KW UNIT'].astype(float).round(2)
+            df_isoltutions['POT KW UNIT'] = df_isoltutions['POT KW UNIT'].astype(float).round(1)
+            df_isoltutions['POT TOTAL BOMBAS'] = df_isoltutions['POT TOTAL BOMBAS'].astype(float).round(1)
             isol1, isol2 = st.columns(2)
             inversores_marca_isolutions = sorted(df_isoltutions['MARCA'].unique())
             inversores_ano_isolutions = sorted(df_isoltutions['Ano'].unique())
@@ -1304,17 +1307,20 @@ if applicativo == "Base Instalada":
             #grafico_inversores = px.bar(df_isoltutions_filtrado['QTD INV']*df_isoltutions_filtrado['MODELO'].counts, y='Quantidade', x=pot)
 
             # Criar uma nova coluna com a contagem de modelos multiplicada pela quantidade de inversores
-
-            df_grafico_inv = df_isoltutions_filtrado.groupby(['MODELO', 'POT KW UNIT']).agg({'QTD TOTAL': 'sum'}).reset_index()
+            df_grafico_inv = df_isoltutions_filtrado.groupby(['MODELO', 'POT KW UNIT','POT KW UNIT VALOR']).agg({'QTD TOTAL': 'sum'}).reset_index()
             df_grafico_inv['POT KW UNIT'] = df_grafico_inv['POT KW UNIT'].astype(str) + "kW"
-            st.dataframe(df_isoltutions_filtrado)
+            #st.dataframe(df_isoltutions_filtrado)
+            df_grafico_inv = df_grafico_inv.sort_values(by='POT KW UNIT VALOR', ascending=True)
             #st.dataframe(df_grafico_inv)
+
+            
+
             # Gerar o gráfico com Plotly Express
             color_map = {
                 "-": "white",  # Categoria "-" com cor branca
-                "MGE": "darkblue",  # MGE com azul escuro
-                "MGE FAI": "darkblue",  # MGE com azul escuro
-                "CUE": "darkblue",  # CUE com azul escuro
+                "MGE": "blue",  # MGE com azul escuro
+                "MGE FAI": "blue",  # MGE com azul escuro
+                "CUE": "blue",  # CUE com azul escuro
                 "V20": "gray",  # V20 com cinza
                 "G120X": "gray",  # G120X com cinza
                 "POWERFLEX": "orange",  # Powerflex com laranja
@@ -1328,9 +1334,30 @@ if applicativo == "Base Instalada":
                                         color='MODELO',  # Usar a coluna 'MODELO' para aplicar o mapeamento de cores
                                         title='Quantidade de Inversores ',
                                         color_discrete_map=color_map,  # Aplicar o mapeamento de cores
-                                        category_orders={"POT KW UNIT": sorted(
-                                        df_grafico_inv['POT KW UNIT'].unique())})  # Forçar ordem discreta
-            st.plotly_chart(grafico_inversores, use_container_width=True)
+                                        
+            )
+            
+            
+         
+            color_ = {
+                "-": "white",  # Categoria "-" com cor branca
+                "Grundfos": "blue",  # MGE com azul escuro
+                "Siemens": "gray",  # V20 com cinza
+                "ROCKWELL": "orange",  # Powerflex com laranja
+                "WEG":"yellow",
+                "DANFOSS":"red"
+            }
+            df_inversores_ano = df_isoltutions_filtrado.groupby(['MARCA','Ano']).agg({'QTD TOTAL':'sum'}).reset_index()
+            #st.dataframe(df_inversores_ano)
+            inversores_ano = px.bar(df_inversores_ano, x="Ano", y="QTD TOTAL", color='MARCA', title='Unidades Vendidas por marca', color_discrete_map = color_)
+            
+
+            isol3, isol4 = st.columns(2)
+
+            with isol3:
+                st.plotly_chart(grafico_inversores, use_container_width=True)
+            with isol4:
+                st.plotly_chart(inversores_ano, use_container_width=True)
             
 
     elif authentication_status == False:
