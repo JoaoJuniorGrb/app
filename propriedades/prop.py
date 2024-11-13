@@ -1,4 +1,4 @@
-import streamlit as st
+|'import streamlit as st
 import CoolProp.CoolProp as prop
 from CoolProp.CoolProp import PropsSI,PhaseSI
 from pathlib import Path
@@ -1575,8 +1575,8 @@ if applicativo == 'Equações de afinidade':
         st.image("https://omel.com.br/wp-content/uploads/2024/02/leis-de-afinidade-01-jpg.webp",caption="D diametro rotor / N RPM",
                 use_column_width=True,
                 output_format="auto")
-        relacao_b1 = st.number_input("Rotação N1 | Rotor D1", min_value=0, max_value=10000)
-        relacao_b2 = st.number_input("Rotação N2 | Rotor D2", min_value=0, max_value=10000)
+        relacao_b1 = st.number_input("Rotação N1 | Rotor D1", min_value=1, max_value=10000)
+        relacao_b2 = st.number_input("Rotação N2 | Rotor D2", min_value=1, max_value=10000)
         linha_bomba = st.number_input("Pontos", min_value=3)
         relacao_n = (relacao_b2/relacao_b1) 
 
