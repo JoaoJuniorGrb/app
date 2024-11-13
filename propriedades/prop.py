@@ -97,8 +97,8 @@ if name == "Fellipe Gebien":
     legendas1 = ["Localização de pedidos a partir da O.V. com acesso a historico de alterções"]
 
 if name == "Joao Hering Ferreira":
-    programas = ["Perda de Carga",'Em desenvolvimento','Equações de afinidade',"Propriedades Termodinâmicas","Placa de orificio","QHS","Sistemas de controle","Final", "Base Instalada","Localização de Pedidos"]
-    legendas1 = ["Cálculo de perda de carga","Fornece gráfico de propriedades termodinamicas selecionadas",'Em desenvolvimento','Em desenvolvimento','Em desenvolvimento',"Informações sobre o programa","Levantamentos","Localização de pedidos a partir da O.V. com acesso a historico de alterções"]
+    programas = ["Perda de Carga",'Equações de afinidade',"Propriedades Termodinâmicas","Placa de orificio","QHS","Sistemas de controle","Final", "Base Instalada","Localização de Pedidos"]
+    legendas1 = ["Cálculo de perda de carga",'Em desenvolvimento',"Fornece gráfico de propriedades termodinamicas selecionadas",'Em desenvolvimento','Em desenvolvimento','Em desenvolvimento',"Informações sobre o programa","Levantamentos","Localização de pedidos a partir da O.V. com acesso a historico de alterções"]
 
 
 st.sidebar.header("Selecione o programa desejado")
