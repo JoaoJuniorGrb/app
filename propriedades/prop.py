@@ -1,4 +1,4 @@
-|'import streamlit as st
+import streamlit as st
 import CoolProp.CoolProp as prop
 from CoolProp.CoolProp import PropsSI,PhaseSI
 from pathlib import Path
