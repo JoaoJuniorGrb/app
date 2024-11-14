@@ -86,8 +86,8 @@ name, authentication_status, username = authenticator.login('Login', 'sidebar')
 
 #Inicial
 if authentication_status:
-    programas = ["Perda de Carga",'Equações de afinidade',"Propriedades Termodinâmicas","Placa de orificio","QHS","Sistemas de controle","Final", "Base Instalada"]
-    legendas1 = ["Cálculo de perda de carga",'Em desenvolvimento',"Fornece gráfico de propriedades termodinamicas selecionadas",'Em desenvolvimento','Em desenvolvimento','Em desenvolvimento',"Informações sobre o programa","Levantamentos"]
+    programas = ["Perda de Carga",'Equações de afinidade',"Propriedades Termodinâmicas","Placa de orificio","QHS","Sistemas de controle","Final", "Base Instalada",'Gestão de projetos']
+    legendas1 = ["Cálculo de perda de carga",'Em desenvolvimento',"Fornece gráfico de propriedades termodinamicas selecionadas",'Em desenvolvimento','Em desenvolvimento','Em desenvolvimento',"Informações sobre o programa","Levantamentos","Informações sobre Projetos"]
 if not authentication_status:
     programas = ["Perda de Carga",'Equações de afinidade', "Propriedades Termodinâmicas",  "QHS","Sistemas de controle", "Final"]
     legendas1 = ["Cálculo de perda de carga",'Em desenvolvimento', "Fornece gráfico de propriedades termodinamicas selecionadas",
@@ -97,8 +97,8 @@ if name == "Fellipe Gebien":
     legendas1 = ["Localização de pedidos a partir da O.V. com acesso a historico de alterções"]
 
 if name == "Joao Hering Ferreira":
-    programas = ["Perda de Carga",'Equações de afinidade',"Propriedades Termodinâmicas","Placa de orificio","QHS","Sistemas de controle","Final", "Base Instalada","Localização de Pedidos"]
-    legendas1 = ["Cálculo de perda de carga",'Em desenvolvimento',"Fornece gráfico de propriedades termodinamicas selecionadas",'Em desenvolvimento','Em desenvolvimento','Em desenvolvimento',"Informações sobre o programa","Levantamentos","Localização de pedidos a partir da O.V. com acesso a historico de alterções"]
+    programas = ["Perda de Carga",'Equações de afinidade',"Propriedades Termodinâmicas","Placa de orificio","QHS","Sistemas de controle","Final", "Base Instalada","Localização de Pedidos",'Gestão de projetos']
+    legendas1 = ["Cálculo de perda de carga",'Em desenvolvimento',"Fornece gráfico de propriedades termodinamicas selecionadas",'Em desenvolvimento','Em desenvolvimento','Em desenvolvimento',"Informações sobre o programa","Levantamentos","Localização de pedidos a partir da O.V. com acesso a historico de alterções","Informações sobre Projetos"]
 
 
 st.sidebar.header("Selecione o programa desejado")
@@ -1609,7 +1609,144 @@ if applicativo == 'Equações de afinidade':
     # Adicionar a segunda linha 
     curva_bomba.add_trace(go.Scatter(x=df_bomba_nova['Vazão B1'], y=df_bomba_nova['Altura B1'], mode='lines', name='B1'))
     curva_bomba.update_layout(xaxis_title='Vazão',yaxis_title='Altura manometrica')
-
-
-
     st.plotly_chart(curva_bomba, use_container_width=True)
+
+
+
+if applicativo == 'Gestão de projetos':
+        # Divisor personalizado com degradê de amarelo para azul
+        nome= name
+        st.markdown(
+            f"""
+            <h1 style="text-align: left;">
+                Gestão de projetos, Bem vindo {nome}!
+            </h1>
+            """,
+            unsafe_allow_html=True)
+            # Divisor personalizado com degradê de amarelo para azul
+        st.markdown("""
+            <hr style="border: 0; height: 16px; background: linear-gradient(to left, blue,blue,blue,blue,blue,yellow,yellow,blue);">
+            """, unsafe_allow_html=True)
+        # Define o fuso horário de Brasília
+        fuso_horario_brasilia = pytz.timezone("America/Sao_Paulo")
+        # Obtém a data e hora atuais no fuso horário de Brasília
+        data_atual = datetime.now(fuso_horario_brasilia)
+         # Função para enviar dados para o Firebase RTDB
+        
+        def enviar_rtdb(referencia_1,referencia_2,data_i,data_m,pendente,realizado,status,cliente,nome):
+            try:
+                # Constrói o caminho dinâmico para o Firebase RTDB
+                ref = db.reference(f"{referencia_1}/{referencia_2}")
+
+                # Dados a serem enviados
+                dados = {
+                    "data inicio": str(data_i),
+                    "data mod": str(data_m),
+                    "cliente":str(cliente),
+                    "nome": str(nome),
+                    "status": status,
+                    "realizado":str(realizado),
+                    "pendente":str(pendente)
+                }
+
+                # Envia os dados para o Firebase
+                ref.set(dados)
+
+                return True  # Retorna True se a operação foi bem-sucedida
+
+            except Exception as e:
+                return False
+
+
+        def consulta_rtdb (referencia):
+            try:
+                # Constrói o caminho dinâmico para o Firebase RTDB
+                ref = db.reference(referencia)
+                dados_projetos = ref.get()
+                return (True,dados_projetos)
+
+            except Exception as e:
+                return (False, "vazio")
+        
+        estoque_col_1,estoque_col_2 = st.columns([0.2,0.8])
+
+        with estoque_col_1:
+            status = False
+            # Inicialize o estado dos campos de texto se ainda não estiverem definidos
+            if "fai_numero" not in st.session_state:
+                st.session_state.ov_estoque = ""
+            if "fai_cliente" not in st.session_state:
+                st.session_state.endereco_estoque = ""
+            # Função para limpar o conteúdo dos campos ao focar
+            def clear_text(field_name):
+                st.session_state[field_name] = ""
+
+            fai_numero =  st.text_input("Novo projeto",placeholder="FAI")
+            fai_cliente =  st.text_input("Cliente",placeholder="Cliente-UF ")
+            registrar = st.button("Registrar",type="secondary",use_container_width=True)
+            if registrar:
+                data_inicio = (data_atual.strftime("%d-%m-%Y %H:%M")) # Formato: dd/mm/aaaa)
+                data_mod = (data_atual.strftime("%d-%m-%Y %H:%M"))
+                #(referencia_1,referencia_2,data_i,data_m,pendente,realizado,status,cliente,nome)
+                status_fai = False
+                status = enviar_rtdb("projetos",fai_numero,data_inicio,data_mod," "," ",status_fai,fai_cliente,nome)
+                if status:
+                    st.success(f"OV:{fai_numero} ({data_inicio})",icon="✅")
+
+                if not status:
+                    st.success(f"{fai_numero} falha!")
+        with estoque_col_2:
+            atualizar_base = st.button("Salvar alterações",type="secondary",use_container_width=True)
+            df_projeto_status,dc_projetos  = consulta_rtdb ("projetos")
+            #st.dataframe(dc_projetos,use_container_width=True)
+            df_projetos = pd.DataFrame.from_dict(dc_projetos,orient="index").reset_index()
+            df_projetos.rename(columns={"index": "FAI"},inplace=True)
+            df_projetos = df_projetos[["FAI","data inicio",'data mod','pendente','realizado',"cliente","nome","status"]]
+            #df_projetos["data inicio"] = pd.to_datetime(df_projetos["data inicio"], format="%d/%m/%Y %H:%M")
+            #df_projetos["data mod"] = pd.to_datetime(df_projetos["data mod"], format="%d/%m/%Y %H:%M")
+                     
+            df_projetos_editado = st.data_editor(df_projetos,hide_index=True, use_container_width=True)
+            
+            df_projetos_merged = pd.merge(df_projetos,df_projetos_editado,on="FAI",suffixes=('_df_og','_df_nv'),indicator=True)
+            #st.dataframe(df_projetos_merged,hide_index=True)
+            df_projetos_envio = df_projetos_merged [(df_projetos_merged["data inicio_df_og"] != df_projetos_merged["data inicio_df_nv"]) |
+                                                    (df_projetos_merged["data mod_df_og"] != df_projetos_merged["data mod_df_nv"]) |
+                                                    (df_projetos_merged["pendente_df_og"] != df_projetos_merged["pendente_df_nv"]) |
+                                                    (df_projetos_merged["cliente_df_og"] != df_projetos_merged["cliente_df_nv"]) |
+                                                    (df_projetos_merged["nome_df_og"] != df_projetos_merged["nome_df_nv"]) |
+                                                    (df_projetos_merged["status_df_og"] != df_projetos_merged["status_df_nv"]) |
+                                                    (df_projetos_merged["realizado_df_og"] != df_projetos_merged["realizado_df_nv"])
+            ]        
+            df_projetos_envio = df_projetos_envio[["FAI","data inicio_df_nv","data mod_df_nv","pendente_df_nv","cliente_df_nv","nome_df_nv","status_df_nv","realizado_df_nv"]]
+            colunas_envio = {"FAI":'FAI',
+                             "data inicio_df_nv":"data inicio",
+                             "data mod_df_nv":"data mod",
+                             "pendente_df_nv":"pendente",
+                             "realizado_df_nv":"realizado",
+                             "cliente_df_nv":"cliente",
+                             "nome_df_nv":"nome",
+                             "status_df_nv":"status"
+                             }
+            df_projetos_envio.rename(columns=colunas_envio, inplace=True)
+            #st.dataframe(df_projetos_envio,hide_index=True)
+            
+            if atualizar_base:
+                for i,row in df_projetos_envio.iterrows():
+                    data_mod = str(data_atual.strftime("%d-%m-%Y %H:%M")) 
+                    dicionario_envio = row.to_dict()
+                    data_inic = str(dicionario_envio["data inicio"])
+                    status_base = enviar_rtdb("projetos",dicionario_envio["FAI"],data_inic,data_mod,dicionario_envio["pendente"],dicionario_envio["realizado"],dicionario_envio["status"],dicionario_envio["cliente"],nome)
+                    
+                    if status_base:
+                        fai_base = dicionario_envio["FAI"]
+                        st.success(f"OV:{fai_base} ({data_mod})",icon="✅")
+
+                    if not status_base:
+                        fai_base = dicionario_envio["FAI"]
+                        st.success(f"{fai_base} falha!")
+
+
+
+            # Verifica se há atualizações a cada intervalo (por exemplo, 5 segundos)
+            st_autorefresh(interval=5000, limit=None, key="firebase_update")
+
