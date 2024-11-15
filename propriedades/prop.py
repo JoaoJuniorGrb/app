@@ -1612,7 +1612,6 @@ if applicativo == 'Equações de afinidade':
     st.plotly_chart(curva_bomba, use_container_width=True)
 
 
-
 if applicativo == 'Gestão de projetos':
         # Divisor personalizado com degradê de amarelo para azul
         nome= name
@@ -1640,8 +1639,8 @@ if applicativo == 'Gestão de projetos':
 
                 # Dados a serem enviados
                 dados = {
-                    "data inicio": str(data_i),
-                    "data mod": str(data_m),
+                    "data inicio": data_i,
+                    "data mod": data_m,
                     "cliente":str(cliente),
                     "nome": str(nome),
                     "status": status,
@@ -1672,29 +1671,36 @@ if applicativo == 'Gestão de projetos':
 
         with estoque_col_1:
             status = False
-            # Inicialize o estado dos campos de texto se ainda não estiverem definidos
+            
+            # Inicializa o estado dos campos de texto se ainda não estiverem definidos
             if "fai_numero" not in st.session_state:
-                st.session_state.ov_estoque = ""
+                st.session_state.fai_numero = ""  # Inicializa a chave no session_state
             if "fai_cliente" not in st.session_state:
-                st.session_state.endereco_estoque = ""
-            # Função para limpar o conteúdo dos campos ao focar
-            def clear_text(field_name):
-                st.session_state[field_name] = ""
+                st.session_state.fai_cliente = ""  # Inicializa a chave no session_state
 
-            fai_numero =  st.text_input("Novo projeto",placeholder="FAI")
-            fai_cliente =  st.text_input("Cliente",placeholder="Cliente-UF ")
-            registrar = st.button("Registrar",type="secondary",use_container_width=True)
+            fai_numero =  st.text_input("Novo projeto",placeholder="FAI",key="fai_numero")
+            fai_cliente =  st.text_input("Cliente",placeholder="Cliente-Un-UF ",key="fai_cliente")
+
+            if not fai_numero or not fai_cliente:
+                st.warning("Por favor, preencha todos os campos!")
+                registrar = False
+            else:
+                registrar = st.button("Registrar",type="secondary",use_container_width=True)
+                               
+            
             if registrar:
-                data_inicio = (data_atual.strftime("%d-%m-%Y %H:%M")) # Formato: dd/mm/aaaa)
-                data_mod = (data_atual.strftime("%d-%m-%Y %H:%M"))
+                data_inicio = data_atual.timestamp()
+                data_mod = data_atual.timestamp()
                 #(referencia_1,referencia_2,data_i,data_m,pendente,realizado,status,cliente,nome)
                 status_fai = False
                 status = enviar_rtdb("projetos",fai_numero,data_inicio,data_mod," "," ",status_fai,fai_cliente,nome)
                 if status:
-                    st.success(f"OV:{fai_numero} ({data_inicio})",icon="✅")
-
+                    st.success(f"Registrado:{fai_numero} ({data_atual.strftime('%d-%m-%Y %H:%M')})",icon="✅")
+                    st_autorefresh(interval=1000,limit=1)             
                 if not status:
                     st.success(f"{fai_numero} falha!")
+                
+                
         with estoque_col_2:
             atualizar_base = st.button("Salvar alterações",type="secondary",use_container_width=True)
             df_projeto_status,dc_projetos  = consulta_rtdb ("projetos")
@@ -1702,10 +1708,11 @@ if applicativo == 'Gestão de projetos':
             df_projetos = pd.DataFrame.from_dict(dc_projetos,orient="index").reset_index()
             df_projetos.rename(columns={"index": "FAI"},inplace=True)
             df_projetos = df_projetos[["FAI","data inicio",'data mod','pendente','realizado',"cliente","nome","status"]]
-            #df_projetos["data inicio"] = pd.to_datetime(df_projetos["data inicio"], format="%d/%m/%Y %H:%M")
-            #df_projetos["data mod"] = pd.to_datetime(df_projetos["data mod"], format="%d/%m/%Y %H:%M")
+            df_projetos["data inicio"] = pd.to_datetime(df_projetos["data inicio"],unit='s', errors='coerce')
+            df_projetos["data mod"] = pd.to_datetime(df_projetos["data mod"], unit='s', errors='coerce')
                      
-            df_projetos_editado = st.data_editor(df_projetos,hide_index=True, use_container_width=True)
+            df_projetos_editado = st.data_editor(df_projetos,column_config={"data inicio": st.column_config.DateColumn("Data de Início",format="DD/MM/YYYY",),
+                "data mod": st.column_config.DateColumn("Última Modificação",format="DD-MM-YYYY")},hide_index=True, use_container_width=True)
             
             df_projetos_merged = pd.merge(df_projetos,df_projetos_editado,on="FAI",suffixes=('_df_og','_df_nv'),indicator=True)
             #st.dataframe(df_projetos_merged,hide_index=True)
@@ -1732,21 +1739,20 @@ if applicativo == 'Gestão de projetos':
             
             if atualizar_base:
                 for i,row in df_projetos_envio.iterrows():
-                    data_mod = str(data_atual.strftime("%d-%m-%Y %H:%M")) 
+                    data_mod = data_atual.timestamp() 
                     dicionario_envio = row.to_dict()
-                    data_inic = str(dicionario_envio["data inicio"])
+                    data_inic = pd.to_datetime(dicionario_envio["data inicio"]).timestamp()
                     status_base = enviar_rtdb("projetos",dicionario_envio["FAI"],data_inic,data_mod,dicionario_envio["pendente"],dicionario_envio["realizado"],dicionario_envio["status"],dicionario_envio["cliente"],nome)
                     
                     if status_base:
                         fai_base = dicionario_envio["FAI"]
-                        st.success(f"OV:{fai_base} ({data_mod})",icon="✅")
+                        st.success(f"OV:{fai_base} {data_atual.strftime('%d-%m-%Y %H:%M')}",icon="✅")
 
                     if not status_base:
                         fai_base = dicionario_envio["FAI"]
-                        st.success(f"{fai_base} falha!")
+                        st.success(f"{fai_base} falha! {str(e)}")
 
 
 
             # Verifica se há atualizações a cada intervalo (por exemplo, 5 segundos)
             st_autorefresh(interval=5000, limit=None, key="firebase_update")
-
