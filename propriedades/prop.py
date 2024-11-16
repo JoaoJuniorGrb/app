@@ -1695,7 +1695,7 @@ if applicativo == 'Gestão de projetos':
                 status_fai = False
                 status = enviar_rtdb("projetos",fai_numero,data_inicio,data_mod," "," ",status_fai,fai_cliente,nome)
                 if status:
-                    st.success(f"Registrado:{fai_numero} ({data_atual.strftime('%d-%m-%Y %H:%M')})",icon="✅")
+                    st.success(f"Registrado:{fai_numero} ({data_atual.strftime('%d/%m/%Y %H:%M')})",icon="✅")
                     st_autorefresh(interval=1000,limit=1)             
                 if not status:
                     st.success(f"{fai_numero} falha!")
