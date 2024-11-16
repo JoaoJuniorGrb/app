@@ -1712,7 +1712,7 @@ if applicativo == 'Gestão de projetos':
             df_projetos["data mod"] = pd.to_datetime(df_projetos["data mod"], unit='s', errors='coerce')
                      
             df_projetos_editado = st.data_editor(df_projetos,column_config={"data inicio": st.column_config.DateColumn("Data de Início",format="DD/MM/YYYY",),
-                "data mod": st.column_config.DateColumn("Última Modificação",format="DD-MM-YYYY")},hide_index=True, use_container_width=True)
+                "data mod": st.column_config.DateColumn("Última Modificação",format="DD/MM/YYYY")},hide_index=True, use_container_width=True)
             
             df_projetos_merged = pd.merge(df_projetos,df_projetos_editado,on="FAI",suffixes=('_df_og','_df_nv'),indicator=True)
             #st.dataframe(df_projetos_merged,hide_index=True)
