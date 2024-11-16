@@ -1566,8 +1566,9 @@ if applicativo == "Sistemas de controle":
         st.plotly_chart(fig)
 
 if applicativo == 'Equações de afinidade':
+    from scipy.interpolate import interp1d
     # Exibe a imagem com a classe CSS para centralizar
-        
+    st.warning('Este recuro utiliza as relações de afinidade para EXTRAPOLAÇÃO de grandezas, esta relaçoes teoricas não refletem com precisao o comportamento real de operaçao de motobombas', icon="⚠️")
     afin_1, afin_2, afin_3 = st.columns(3)
 
     with afin_1:
@@ -1575,8 +1576,10 @@ if applicativo == 'Equações de afinidade':
         st.image("https://omel.com.br/wp-content/uploads/2024/02/leis-de-afinidade-01-jpg.webp",caption="D diametro rotor / N RPM",
                 use_column_width=True,
                 output_format="auto")
-        relacao_b1 = st.number_input("Rotação N1 | Rotor D1", min_value=1, max_value=10000)
-        relacao_b2 = st.number_input("Rotação N2 | Rotor D2", min_value=1, max_value=10000)
+        relacao_b1 = st.number_input("Rotação N1 | Rotor D1", min_value=1, max_value=5000)
+        relacao_b2 = st.slider("Rotação N2 | Rotor D2", min_value=1, max_value=5000)
+        vazao_nova = st.number_input('Nova vazão',min_value = 0.1)
+        pressao_nova = st.number_input('Nova Pressão',min_value = 0.1)
         linha_bomba = st.number_input("Pontos", min_value=3)
         relacao_n = (relacao_b2/relacao_b1) 
 
@@ -1603,13 +1606,37 @@ if applicativo == 'Equações de afinidade':
         df_bomba_nova["Potencia B2"] = df_bomba_nova["Potencia B1"]*relacao_n**3
         st.dataframe(df_bomba_nova[["Vazão B2","Altura B2","Potencia B2"]], hide_index=True, use_container_width=True)
         
+    if not df_bomba_nova.eq(0).all().all():
+        # Interpolação para Altura B2
+        altura_b2_interp = interp1d(df_bomba_nova["Vazão B2"], df_bomba_nova["Altura B2"], kind="quadratic", fill_value="extrapolate")
+        # Interpolação para Potência B2
+        potencia_b2_interp = interp1d(df_bomba_nova["Vazão B2"], df_bomba_nova["Potencia B2"], kind="quadratic", fill_value="extrapolate")
+
+        # Criar novos pontos de Vazão (mais densos)
+        vazao_b2_dense = np.linspace(df_bomba_nova["Vazão B2"].min(), df_bomba_nova["Vazão B2"].max(), 100)
+
+        # Gerar os valores interpolados
+        altura_b2_dense = altura_b2_interp(vazao_b2_dense)
+        potencia_b2_dense = potencia_b2_interp(vazao_b2_dense)
+
+        # Criar DataFrame com os dados interpolados para exibição ou gráfico
+        df_bomba_interp = pd.DataFrame({
+            "Vazão B2": vazao_b2_dense,
+            "Altura B2": altura_b2_dense,
+            "Potencia B2": potencia_b2_dense,
+        })
 
         
-    curva_bomba = px.line(df_bomba_nova, x="Vazão B2", y="Altura B2")
-    # Adicionar a segunda linha 
-    curva_bomba.add_trace(go.Scatter(x=df_bomba_nova['Vazão B1'], y=df_bomba_nova['Altura B1'], mode='lines', name='B1'))
-    curva_bomba.update_layout(xaxis_title='Vazão',yaxis_title='Altura manometrica')
-    st.plotly_chart(curva_bomba, use_container_width=True)
+        curva_bomba = px.line(df_bomba_interp, x="Vazão B2", y="Altura B2")
+        # Adicionar a segunda linha 
+        curva_bomba.add_trace(go.Scatter(x=df_bomba_nova['Vazão B1'], y=df_bomba_nova['Altura B1'], mode='lines', name='B1'))
+        curva_bomba.update_layout(xaxis_title='Vazão',yaxis_title='Altura manometrica')
+        curva_bomba.add_trace(go.Scatter(x=[vazao_nova], y=[pressao_nova], mode='markers', marker=dict(size=10, color='red'), name='Operação'))
+        curva_potencia = px.line(df_bomba_interp, x="Potencia B2", y="Altura B2")
+
+
+        st.plotly_chart(curva_bomba, use_container_width=True,key="curva")
+        st.plotly_chart(curva_potencia, use_container_width=True,curva="potencia")
 
 
 if applicativo == 'Gestão de projetos':
