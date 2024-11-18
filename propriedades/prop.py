@@ -1638,7 +1638,6 @@ if applicativo == 'Equações de afinidade':
         st.plotly_chart(curva_bomba, use_container_width=True,key="curva")
         st.plotly_chart(curva_potencia, use_container_width=True,curva="potencia")
 
-
 if applicativo == 'Gestão de projetos':
         # Divisor personalizado com degradê de amarelo para azul
         nome= name
@@ -1659,7 +1658,7 @@ if applicativo == 'Gestão de projetos':
         data_atual = datetime.now(fuso_horario_brasilia)
          # Função para enviar dados para o Firebase RTDB
         
-        def enviar_rtdb(referencia_1,referencia_2,data_i,data_m,pendente,realizado,status,cliente,nome):
+        def enviar_rtdb(referencia_1,referencia_2,data_i,data_m,data_agend,pendente,realizado,status,cliente,nome):
             try:
                 # Constrói o caminho dinâmico para o Firebase RTDB
                 ref = db.reference(f"{referencia_1}/{referencia_2}")
@@ -1668,6 +1667,7 @@ if applicativo == 'Gestão de projetos':
                 dados = {
                     "data inicio": data_i,
                     "data mod": data_m,
+                    "data agenda": data_agend,
                     "cliente":str(cliente),
                     "nome": str(nome),
                     "status": status,
@@ -1718,11 +1718,12 @@ if applicativo == 'Gestão de projetos':
             if registrar:
                 data_inicio = data_atual.timestamp()
                 data_mod = data_atual.timestamp()
+                data_agend = data_atual.timestamp()
                 #(referencia_1,referencia_2,data_i,data_m,pendente,realizado,status,cliente,nome)
                 status_fai = False
-                status = enviar_rtdb("projetos",fai_numero,data_inicio,data_mod," "," ",status_fai,fai_cliente,nome)
+                status = enviar_rtdb("projetos",fai_numero,data_inicio,data_mod,data_agend," "," ",status_fai,fai_cliente,nome)
                 if status:
-                    st.success(f"Registrado:{fai_numero} ({data_atual.strftime('%d/%m/%Y %H:%M')})",icon="✅")
+                    st.success(f"Registrado:{fai_numero} ({data_atual.strftime('%d-%m-%Y %H:%M')})",icon="✅")
                     st_autorefresh(interval=1000,limit=1)             
                 if not status:
                     st.success(f"{fai_numero} falha!")
@@ -1734,27 +1735,30 @@ if applicativo == 'Gestão de projetos':
             #st.dataframe(dc_projetos,use_container_width=True)
             df_projetos = pd.DataFrame.from_dict(dc_projetos,orient="index").reset_index()
             df_projetos.rename(columns={"index": "FAI"},inplace=True)
-            df_projetos = df_projetos[["FAI","data inicio",'data mod','pendente','realizado',"cliente","nome","status"]]
+            df_projetos = df_projetos[["FAI","data inicio",'data mod',"data agenda",'pendente','realizado',"cliente","nome","status"]]
             df_projetos["data inicio"] = pd.to_datetime(df_projetos["data inicio"],unit='s', errors='coerce')
             df_projetos["data mod"] = pd.to_datetime(df_projetos["data mod"], unit='s', errors='coerce')
-                     
-            df_projetos_editado = st.data_editor(df_projetos,column_config={"data inicio": st.column_config.DateColumn("Data de Início",format="DD/MM/YYYY",),
-                "data mod": st.column_config.DateColumn("Última Modificação",format="DD/MM/YYYY")},hide_index=True, use_container_width=True)
+            df_projetos["data agenda"] = pd.to_datetime(df_projetos["data agenda"], unit='s', errors='coerce')
+
+            df_projetos_editado = st.data_editor(df_projetos,column_config={"data inicio": st.column_config.DateColumn("Data de Início",format="DD/MM/YYYY"),
+                "data mod": st.column_config.DateColumn("Última Modificação",format="DD/MM/YYYY"),"data agenda": st.column_config.DateColumn("Agenda",format="DD/MM/YYYY")},hide_index=True, use_container_width=True)
             
             df_projetos_merged = pd.merge(df_projetos,df_projetos_editado,on="FAI",suffixes=('_df_og','_df_nv'),indicator=True)
             #st.dataframe(df_projetos_merged,hide_index=True)
             df_projetos_envio = df_projetos_merged [(df_projetos_merged["data inicio_df_og"] != df_projetos_merged["data inicio_df_nv"]) |
                                                     (df_projetos_merged["data mod_df_og"] != df_projetos_merged["data mod_df_nv"]) |
+                                                    (df_projetos_merged["data agenda_df_og"] != df_projetos_merged["data agenda_df_nv"]) |
                                                     (df_projetos_merged["pendente_df_og"] != df_projetos_merged["pendente_df_nv"]) |
                                                     (df_projetos_merged["cliente_df_og"] != df_projetos_merged["cliente_df_nv"]) |
                                                     (df_projetos_merged["nome_df_og"] != df_projetos_merged["nome_df_nv"]) |
                                                     (df_projetos_merged["status_df_og"] != df_projetos_merged["status_df_nv"]) |
                                                     (df_projetos_merged["realizado_df_og"] != df_projetos_merged["realizado_df_nv"])
             ]        
-            df_projetos_envio = df_projetos_envio[["FAI","data inicio_df_nv","data mod_df_nv","pendente_df_nv","cliente_df_nv","nome_df_nv","status_df_nv","realizado_df_nv"]]
+            df_projetos_envio = df_projetos_envio[["FAI","data inicio_df_nv","data mod_df_nv","data agenda_df_nv","pendente_df_nv","cliente_df_nv","nome_df_nv","status_df_nv","realizado_df_nv"]]
             colunas_envio = {"FAI":'FAI',
                              "data inicio_df_nv":"data inicio",
                              "data mod_df_nv":"data mod",
+                             "data agenda_df_nv":"data agenda",
                              "pendente_df_nv":"pendente",
                              "realizado_df_nv":"realizado",
                              "cliente_df_nv":"cliente",
@@ -1769,17 +1773,20 @@ if applicativo == 'Gestão de projetos':
                     data_mod = data_atual.timestamp() 
                     dicionario_envio = row.to_dict()
                     data_inic = pd.to_datetime(dicionario_envio["data inicio"]).timestamp()
-                    status_base = enviar_rtdb("projetos",dicionario_envio["FAI"],data_inic,data_mod,dicionario_envio["pendente"],dicionario_envio["realizado"],dicionario_envio["status"],dicionario_envio["cliente"],nome)
+                    data_agenda= pd.to_datetime(dicionario_envio["data agenda"]).timestamp()
+                    status_base = enviar_rtdb("projetos",dicionario_envio["FAI"],data_inic,data_mod,data_agenda,dicionario_envio["pendente"],dicionario_envio["realizado"],dicionario_envio["status"],dicionario_envio["cliente"],nome)
                     
                     if status_base:
                         fai_base = dicionario_envio["FAI"]
-                        st.success(f"OV:{fai_base} {data_atual.strftime('%d-%m-%Y %H:%M')}",icon="✅")
+                        st.success(f"OV:{fai_base} {data_atual.strftime('%d/%m/%Y %H:%M')}",icon="✅")
 
                     if not status_base:
                         fai_base = dicionario_envio["FAI"]
-                        st.success(f"{fai_base} falha! {str(e)}")
+                        st.success(f"{fai_base} falha! ")
 
 
 
             # Verifica se há atualizações a cada intervalo (por exemplo, 5 segundos)
             st_autorefresh(interval=5000, limit=None, key="firebase_update")
+
+
