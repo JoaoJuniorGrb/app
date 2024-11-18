@@ -1309,7 +1309,7 @@ if applicativo == "Base Instalada":
             # Criar uma nova coluna com a contagem de modelos multiplicada pela quantidade de inversores
             df_grafico_inv = df_isoltutions_filtrado.groupby(['MODELO', 'POT KW UNIT','POT KW UNIT VALOR']).agg({'QTD TOTAL': 'sum'}).reset_index()
             df_grafico_inv['POT KW UNIT'] = df_grafico_inv['POT KW UNIT'].astype(str) + "kW"
-            #st.dataframe(df_isoltutions_filtrado)
+            
             df_grafico_inv = df_grafico_inv.sort_values(by='POT KW UNIT VALOR', ascending=True)
             #st.dataframe(df_grafico_inv)
 
@@ -1358,7 +1358,7 @@ if applicativo == "Base Instalada":
                 st.plotly_chart(grafico_inversores, use_container_width=True)
             with isol4:
                 st.plotly_chart(inversores_ano, use_container_width=True)
-            
+            st.dataframe(df_isoltutions_filtrado)
 
     elif authentication_status == False:
         st.error('Nome de usuário ou senha incorretos')
