@@ -1801,5 +1801,5 @@ if applicativo == 'Gestão de projetos':
 
 
             # Verifica se há atualizações a cada intervalo (por exemplo, 5 segundos)
-            #st_autorefresh(interval=5000, limit=None, key="firebase_update")
+            st_autorefresh(interval=5000, limit=None, key="firebase_update")
 
