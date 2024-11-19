@@ -1716,6 +1716,8 @@ if applicativo == 'Gestão de projetos':
                                
             
             if registrar:
+                with st.spinner("Atualizando dados..."):
+                    time.sleep(1)
                 data_inicio = data_atual.timestamp()
                 data_mod = data_atual.timestamp()
                 data_agend = data_atual.timestamp()
@@ -1739,9 +1741,18 @@ if applicativo == 'Gestão de projetos':
             df_projetos["data inicio"] = pd.to_datetime(df_projetos["data inicio"],unit='s', errors='coerce')
             df_projetos["data mod"] = pd.to_datetime(df_projetos["data mod"], unit='s', errors='coerce')
             df_projetos["data agenda"] = pd.to_datetime(df_projetos["data agenda"], unit='s', errors='coerce')
-
+            df_projetos["prazo"] = df_projetos["data agenda"].apply(lambda x: max((x.replace(tzinfo=None) - data_atual.replace(tzinfo=None)).days, 0) if pd.notnull(x) else 0)
+            maior_prazo = int(df_projetos["prazo"].max())
+            df_projetos = df_projetos[["FAI","prazo",'pendente',"data agenda",'realizado',"cliente","nome","status","data inicio",'data mod']]
+            
             df_projetos_editado = st.data_editor(df_projetos,column_config={"data inicio": st.column_config.DateColumn("Data de Início",format="DD/MM/YYYY"),
-                "data mod": st.column_config.DateColumn("Última Modificação",format="DD/MM/YYYY"),"data agenda": st.column_config.DateColumn("Agenda",format="DD/MM/YYYY")},hide_index=True, use_container_width=True)
+                "data mod": st.column_config.DateColumn("Última Modificação",format="DD/MM/YYYY"),"data agenda": st.column_config.DateColumn("Agenda",format="DD/MM/YYYY"),"prazo": st.column_config.ProgressColumn(
+            "Prazo Restante",
+            format="%d dias",  # Formato exibido no progresso
+            min_value=0,  # Valor mínimo
+            max_value= maior_prazo  # Valor máximo (ajuste de acordo com sua escala)
+        )},hide_index=True, use_container_width=True)
+            
             
             df_projetos_merged = pd.merge(df_projetos,df_projetos_editado,on="FAI",suffixes=('_df_og','_df_nv'),indicator=True)
             #st.dataframe(df_projetos_merged,hide_index=True)
@@ -1769,6 +1780,7 @@ if applicativo == 'Gestão de projetos':
             #st.dataframe(df_projetos_envio,hide_index=True)
             
             if atualizar_base:
+                
                 for i,row in df_projetos_envio.iterrows():
                     data_mod = data_atual.timestamp() 
                     dicionario_envio = row.to_dict()
@@ -1777,16 +1789,17 @@ if applicativo == 'Gestão de projetos':
                     status_base = enviar_rtdb("projetos",dicionario_envio["FAI"],data_inic,data_mod,data_agenda,dicionario_envio["pendente"],dicionario_envio["realizado"],dicionario_envio["status"],dicionario_envio["cliente"],nome)
                     
                     if status_base:
+                        with st.spinner("Atualizando dados..."):
+                            time.sleep(3)
                         fai_base = dicionario_envio["FAI"]
-                        st.success(f"OV:{fai_base} {data_atual.strftime('%d/%m/%Y %H:%M')}",icon="✅")
+                        st.success(f"Atualizado:{fai_base} {data_atual.strftime('%d/%m/%Y %H:%M')}",icon="✅")
 
                     if not status_base:
                         fai_base = dicionario_envio["FAI"]
-                        st.success(f"{fai_base} falha! ")
+                        st.error(f"{fai_base} falha! ")
 
 
 
             # Verifica se há atualizações a cada intervalo (por exemplo, 5 segundos)
             st_autorefresh(interval=5000, limit=None, key="firebase_update")
-
 
