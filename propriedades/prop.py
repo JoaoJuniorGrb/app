@@ -1732,20 +1732,23 @@ if applicativo == 'Gestão de projetos':
                 
                 
         with estoque_col_2:
-            atualizar_base = st.button("Salvar alterações",type="secondary",use_container_width=True)
-            df_projeto_status,dc_projetos  = consulta_rtdb ("projetos")
-            #st.dataframe(dc_projetos,use_container_width=True)
-            df_projetos = pd.DataFrame.from_dict(dc_projetos,orient="index").reset_index()
-            df_projetos.rename(columns={"index": "FAI"},inplace=True)
-            df_projetos = df_projetos[["FAI","data inicio",'data mod',"data agenda",'pendente','realizado',"cliente","nome","status"]]
-            df_projetos["data inicio"] = pd.to_datetime(df_projetos["data inicio"],unit='s', errors='coerce')
-            df_projetos["data mod"] = pd.to_datetime(df_projetos["data mod"], unit='s', errors='coerce')
-            df_projetos["data agenda"] = pd.to_datetime(df_projetos["data agenda"], unit='s', errors='coerce')
-            df_projetos["prazo"] = df_projetos["data agenda"].apply(lambda x: max((x.replace(tzinfo=None) - data_atual.replace(tzinfo=None)).days, 0) if pd.notnull(x) else 0)
-            maior_prazo = int(df_projetos["prazo"].max())
-            df_projetos = df_projetos[["FAI","prazo",'pendente',"data agenda",'realizado',"cliente","nome","status","data inicio",'data mod']]
-            
-            df_projetos_editado = st.data_editor(df_projetos,column_config={"data inicio": st.column_config.DateColumn("Data de Início",format="DD/MM/YYYY"),
+            pass
+        concluidos_fai = st.checkbox("Concluidos",value=False)
+        atualizar_base = st.button("Salvar alterações",type="secondary",use_container_width=True)
+        df_projeto_status,dc_projetos  = consulta_rtdb ("projetos")
+        #st.dataframe(dc_projetos,use_container_width=True)
+        df_projetos = pd.DataFrame.from_dict(dc_projetos,orient="index").reset_index()
+        df_projetos.rename(columns={"index": "FAI"},inplace=True)
+        df_projetos = df_projetos[["FAI","data inicio",'data mod',"data agenda",'pendente','realizado',"cliente","nome","status"]]
+        df_projetos["data inicio"] = pd.to_datetime(df_projetos["data inicio"],unit='s', errors='coerce')
+        df_projetos["data mod"] = pd.to_datetime(df_projetos["data mod"], unit='s', errors='coerce')
+        df_projetos["data agenda"] = pd.to_datetime(df_projetos["data agenda"], unit='s', errors='coerce')
+        df_projetos["prazo"] = df_projetos["data agenda"].apply(lambda x: max((x.replace(tzinfo=None) - data_atual.replace(tzinfo=None)).days, 0) if pd.notnull(x) else 0)
+        maior_prazo = int(df_projetos["prazo"].max())
+        df_projetos = df_projetos[["FAI","prazo",'pendente',"data agenda",'realizado',"cliente","nome","status","data inicio",'data mod']]
+        if not concluidos_fai:
+            df_projetos = df_projetos[df_projetos['status'] == False]
+        df_projetos_editado = st.data_editor(df_projetos,column_config={"data inicio": st.column_config.DateColumn("Data de Início",format="DD/MM/YYYY"),
                 "data mod": st.column_config.DateColumn("Última Modificação",format="DD/MM/YYYY"),"data agenda": st.column_config.DateColumn("Agenda",format="DD/MM/YYYY"),"prazo": st.column_config.ProgressColumn(
             "Prazo Restante",
             format="%d dias",  # Formato exibido no progresso
@@ -1754,9 +1757,9 @@ if applicativo == 'Gestão de projetos':
         )},hide_index=True, use_container_width=True)
             
             
-            df_projetos_merged = pd.merge(df_projetos,df_projetos_editado,on="FAI",suffixes=('_df_og','_df_nv'),indicator=True)
-            #st.dataframe(df_projetos_merged,hide_index=True)
-            df_projetos_envio = df_projetos_merged [(df_projetos_merged["data inicio_df_og"] != df_projetos_merged["data inicio_df_nv"]) |
+        df_projetos_merged = pd.merge(df_projetos,df_projetos_editado,on="FAI",suffixes=('_df_og','_df_nv'),indicator=True)
+        #st.dataframe(df_projetos_merged,hide_index=True)
+        df_projetos_envio = df_projetos_merged [(df_projetos_merged["data inicio_df_og"] != df_projetos_merged["data inicio_df_nv"]) |
                                                     (df_projetos_merged["data mod_df_og"] != df_projetos_merged["data mod_df_nv"]) |
                                                     (df_projetos_merged["data agenda_df_og"] != df_projetos_merged["data agenda_df_nv"]) |
                                                     (df_projetos_merged["pendente_df_og"] != df_projetos_merged["pendente_df_nv"]) |
@@ -1765,8 +1768,8 @@ if applicativo == 'Gestão de projetos':
                                                     (df_projetos_merged["status_df_og"] != df_projetos_merged["status_df_nv"]) |
                                                     (df_projetos_merged["realizado_df_og"] != df_projetos_merged["realizado_df_nv"])
             ]        
-            df_projetos_envio = df_projetos_envio[["FAI","data inicio_df_nv","data mod_df_nv","data agenda_df_nv","pendente_df_nv","cliente_df_nv","nome_df_nv","status_df_nv","realizado_df_nv"]]
-            colunas_envio = {"FAI":'FAI',
+        df_projetos_envio = df_projetos_envio[["FAI","data inicio_df_nv","data mod_df_nv","data agenda_df_nv","pendente_df_nv","cliente_df_nv","nome_df_nv","status_df_nv","realizado_df_nv"]]
+        colunas_envio = {"FAI":'FAI',
                              "data inicio_df_nv":"data inicio",
                              "data mod_df_nv":"data mod",
                              "data agenda_df_nv":"data agenda",
@@ -1776,12 +1779,12 @@ if applicativo == 'Gestão de projetos':
                              "nome_df_nv":"nome",
                              "status_df_nv":"status"
                              }
-            df_projetos_envio.rename(columns=colunas_envio, inplace=True)
-            #st.dataframe(df_projetos_envio,hide_index=True)
+        df_projetos_envio.rename(columns=colunas_envio, inplace=True)
+        #st.dataframe(df_projetos_envio,hide_index=True)
             
-            if atualizar_base:
+        if atualizar_base:
                 
-                for i,row in df_projetos_envio.iterrows():
+            for i,row in df_projetos_envio.iterrows():
                     data_mod = data_atual.timestamp() 
                     dicionario_envio = row.to_dict()
                     data_inic = pd.to_datetime(dicionario_envio["data inicio"]).timestamp()
@@ -1789,8 +1792,6 @@ if applicativo == 'Gestão de projetos':
                     status_base = enviar_rtdb("projetos",dicionario_envio["FAI"],data_inic,data_mod,data_agenda,dicionario_envio["pendente"],dicionario_envio["realizado"],dicionario_envio["status"],dicionario_envio["cliente"],nome)
                     
                     if status_base:
-                        with st.spinner("Atualizando dados..."):
-                            time.sleep(3)
                         fai_base = dicionario_envio["FAI"]
                         st.success(f"Atualizado:{fai_base} {data_atual.strftime('%d/%m/%Y %H:%M')}",icon="✅")
 
@@ -1801,5 +1802,7 @@ if applicativo == 'Gestão de projetos':
 
 
             # Verifica se há atualizações a cada intervalo (por exemplo, 5 segundos)
-            st_autorefresh(interval=5000, limit=None, key="firebase_update")
+            with st.spinner("Atualizando dados..."):
+                st_autorefresh(interval=5000, limit=15, key="firebase_update")
+            
 
