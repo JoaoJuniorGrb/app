@@ -27,7 +27,7 @@ import json
 import control as ctrl
 import plotly.graph_objects as go
 
-url_imagem = "https://www.agrimidia.com.br/wp-content/plugins/seox-image-magick/imagick_convert.php?width=904&height=508&format=.jpg&quality=91&imagick=/wp-content/uploads/2024/06/logo-.jpg"
+url_imagem = "https://i0.wp.com/cdn.newspulpaper.com/wp-content/uploads/2024/06/05163805/Submarca-Fiedler-01.png?resize=1068%2C373&ssl=1"
 # Esconde o cabeçalho e o rodapé padrão do Streamlit
 st.set_page_config(page_title="Fiedler Automação", page_icon="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAMAAABF0y+mAAAAqFBMVEUuMo0rMI0oLY8lK48kKpARHJIwNIZiX3ZybXQFFZN2cWvUxS/55wj/7gD/8AD/8wDh0SAdJI9ZVnro1x//9gD/7wB+eGcWIJKPh1/u3ROakVZFRoExNYAmLIPz4RSFfmRNTH0qL44+QITLvTN4c2a4q0jBtD7JvD+VjV47PYfayyqqoE9gXnCIgGNbWXivpEtmY25SUnwAEJRKS34AAJamnFSflVfOwC7jtOtQAAAA/0lEQVR4AWIYcACgih60GIahAIDWippas1f7/79sXrLd4+BRlGTu/0pRNd3gNIGTTAtAhL+ITfkddVzPRxwJFHYXRshHxI/dL5vfqQlBxI7SbMGILKbl4WWwApBHXW8+d5stJLt9TDgPUJbw4B0TTODpHHysHOn78QKvK0LyIgfXjx3LqJS48pbF0fOw/0ZqFpWC+gQr27tGevVx+f4UM7/BFcABpfKLJEm8jzModxZqTboRn4Rfqttc26vRBa7/hInBF7Lp4/Sq2cMYj+enlbMRGDqep2Cy9N0Yzw/AogIn29JMwZAneRc+/S1Zq8RKaDfrlt6HLW0oQqAiw6AAACorHoO4OiwrAAAAAElFTkSuQmCC", layout="wide")
 
