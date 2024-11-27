@@ -938,15 +938,12 @@ if applicativo == "Perda de Carga":
             if dados_fluido == 'Coolprop':
                 fluido_npsh = st.selectbox("Fluido", lista_fluidos, index=93)
                 temperatura_npsh = st.number_input("Temperatura [°C]", min_value=0.1, value=30.0, step=0.1, format="%.1f")
-                press_rt = st.number_input("Pressão man[bar]", min_value=0.000, value=0.000, step=0.1, format="%.3f")
-                press_rt = press_rt * 100000
+
             if dados_fluido == "Outro":
                 p_vapor = st.number_input("P. de Vapor [Bar]", min_value=0.000001,step=0.1, format="%.4f")
                 carga_densidade = st.number_input("ρ [kg/m³]", min_value=0.000001, step=0.01, format="%.1f",value=999.0)
                 carga_visosidade_ = st.number_input("μ [Cp]", min_value=0.00001, step=0.001, format="%.3f", value=1.01)
                 carga_visosidade = carga_visosidade_ / 1000
-                press_rt = st.number_input("Pressão man[bar]", min_value=0.000, value=0.000, step=0.1, format="%.3f")
-                press_rt = press_rt * 100000
             vazao_npsh = st.number_input("Vazão [m³/h]", min_value=0.00000001, step=0.1, format="%.1f")
 
         with npsh2:
@@ -1009,10 +1006,8 @@ if applicativo == "Perda de Carga":
             if dados_fluido == 'Coolprop':
                 p_vapor = PropsSI('P', 'T', (temperatura_npsh + 273.15), 'Q', 1, fluido_npsh)
                 p_vapor = p_vapor / (100000)
-                p_final = abs_press + press_rt
-                carga_densidade = prop.PropsSI('D', 'T', (temperatura_npsh + 273.15), 'P', p_final , fluido_npsh)
-                carga_densidade = carga_densidade
-                carga_visosidade = prop.PropsSI('VISCOSITY', 'T', (temperatura_npsh + 273.15), 'P', p_final,fluido_npsh)
+                carga_densidade = prop.PropsSI('D', 'T', (temperatura_npsh + 273.15), 'P', abs_press, fluido_npsh)
+                carga_visosidade = prop.PropsSI('VISCOSITY', 'T', (temperatura_npsh + 273.15), 'P', abs_press,fluido_npsh)
             # st.title("Min {}".format(min_altitude), anchor=False)
             # st.title("Max {}".format(max_altitude), anchor=False)
             # st.title("Med {}".format(med_altitude), anchor=False)
@@ -1021,10 +1016,6 @@ if applicativo == "Perda de Carga":
             bar_vapor = p_vapor * margem_pv
             st.subheader("Pressão Abs \n {:.3f} Bar Absoluto \n( {:.2f} mcf )".format(abs_bar, abs_mcf), anchor=False)
             st.subheader("Pressão vapor \n {:.3f} Bar absoluto".format(bar_vapor), anchor=False)
-            st.subheader("Densidade \n {:.1f} kg/m³".format(carga_densidade), anchor=False)
-            st.subheader("Viscosidade \n {:.1f} cp".format(carga_visosidade), anchor=False)
-            
-
 
         st.header("Acessórios", anchor=False)
 
@@ -1072,8 +1063,8 @@ if applicativo == "Perda de Carga":
                 st.button('Excluir', key=f'remove_{i}', on_click=remove_input, args=(i,))
 
         if dados_fluido == 'Coolprop':
-            carga_densidade = prop.PropsSI('D', 'T', (temperatura_npsh + 273.15), 'P', p_final, fluido_npsh)
-            carga_visosidade = prop.PropsSI('VISCOSITY', 'T', (temperatura_npsh + 273.15), 'P', p_final, fluido_npsh)
+            carga_densidade = prop.PropsSI('D', 'T', (temperatura_npsh + 273.15), 'P', abs_press, fluido_npsh)
+            carga_visosidade = prop.PropsSI('VISCOSITY', 'T', (temperatura_npsh + 273.15), 'P', abs_press, fluido_npsh)
         df_acessorios_usados = pd.DataFrame(st.session_state['inputs'])
         tubo_dict = {'Acessório': 'Tubo', 'Quantidade': comprimento_tubulação, 'perda': 'PVC'}
 
@@ -1109,11 +1100,11 @@ if applicativo == "Perda de Carga":
         perda_bar = (df_acessorios_usados["perda [m²/s²]"].sum()) * carga_densidade / 100000
         # st.table(df_acessorios_usados)
         dinamica_bar = (carga_densidade * (velocidade * velocidade) )/ (2 * 100000)
-        npsh_disponivel_bar = abs_bar - bar_vapor - perda_bar + dinamica_bar + ((press_rt/100000) +
-        (altura_entrada_npsh * 9.81 * carga_densidade / 100000))
+        npsh_disponivel_bar = abs_bar - bar_vapor - perda_bar + dinamica_bar + (
+        altura_entrada_npsh * 9.81 * carga_densidade / 100000)
         npsh_disponivel_mcf = (npsh_disponivel_bar * 100000)/(9.81 * carga_densidade)
         st.subheader("NPSH = Pabs + Pdin + Palt - Perda carga - Pvapor",anchor=False)
-        st.subheader("NPSH=({:.3f})+({:.3f})+({:.3f})-({:.3f})-({:.3f})".format(abs_bar,dinamica_bar,(((press_rt/100000))+altura_entrada_npsh * 9.81 * carga_densidade/100000) ,perda_bar,bar_vapor),
+        st.subheader("NPSH=({:.3f})+({:.3f})+({:.3f})-({:.3f})-({:.3f})".format(abs_bar,dinamica_bar,(altura_entrada_npsh * 9.81 * carga_densidade / 100000) ,perda_bar,bar_vapor),
                      anchor=False)
         st.subheader("NPSH disponivel {:.2f} Bar ({:.1f}) mcf".format(npsh_disponivel_bar, npsh_disponivel_mcf), anchor=False)
 
