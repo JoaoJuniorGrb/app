@@ -1011,8 +1011,8 @@ if applicativo == "Perda de Carga":
                 p_vapor = p_vapor / (100000)
                 p_final = abs_press + press_rt
                 carga_densidade = prop.PropsSI('D', 'T', (temperatura_npsh + 273.15), 'P', p_final , fluido_npsh)
-                carga_densidade_1 = carga_densidade
-                carga_visosidade_1 = prop.PropsSI('VISCOSITY', 'T', (temperatura_npsh + 273.15), 'P', p_final,fluido_npsh)
+                carga_densidade = carga_densidade
+                carga_visosidade = prop.PropsSI('VISCOSITY', 'T', (temperatura_npsh + 273.15), 'P', p_final,fluido_npsh)
             # st.title("Min {}".format(min_altitude), anchor=False)
             # st.title("Max {}".format(max_altitude), anchor=False)
             # st.title("Med {}".format(med_altitude), anchor=False)
@@ -1022,6 +1022,7 @@ if applicativo == "Perda de Carga":
             st.subheader("Pressão Abs \n {:.3f} Bar Absoluto \n( {:.2f} mcf )".format(abs_bar, abs_mcf), anchor=False)
             st.subheader("Pressão vapor \n {:.3f} Bar absoluto".format(bar_vapor), anchor=False)
             st.subheader("Densidade \n {:.1f} kg/m³".format(carga_densidade), anchor=False)
+            st.subheader("Viscosidade \n {:.1f} cp".format(carga_visosidade), anchor=False)
             
 
 
