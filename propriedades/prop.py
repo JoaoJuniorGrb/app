@@ -1015,11 +1015,11 @@ if applicativo == "Perda de Carga":
             # st.title("Max {}".format(max_altitude), anchor=False)
             # st.title("Med {}".format(med_altitude), anchor=False)
             abs_bar = abs_press / (100000)
-            abs_mcf = (abs_bar * 100000)/(9.81 * carga_densidade)
+            abs_mcf = (abs_bar * 100000)/(9.81 * carga_densidade_1)
             bar_vapor = p_vapor * margem_pv
             st.subheader("Pressão Abs \n {:.3f} Bar Absoluto \n( {:.2f} mcf )".format(abs_bar, abs_mcf), anchor=False)
             st.subheader("Pressão vapor \n {:.3f} Bar absoluto".format(bar_vapor), anchor=False)
-            st.subheader("Densidade \n {:.1f} Bar absoluto".format(carga_densidade), anchor=False)
+            st.subheader("Densidade \n {:.1f} kg/m³".format(carga_densidade_1), anchor=False)
             
 
 
@@ -1108,9 +1108,9 @@ if applicativo == "Perda de Carga":
         dinamica_bar = (carga_densidade_1 * (velocidade * velocidade) )/ (2 * 100000)
         npsh_disponivel_bar = abs_bar - bar_vapor - perda_bar + dinamica_bar + ((press_rt/100000) +
         (altura_entrada_npsh * 9.81 * carga_densidade_1 / 100000))
-        npsh_disponivel_mcf = (npsh_disponivel_bar * 100000)/(9.81 * carga_densidade)
+        npsh_disponivel_mcf = (npsh_disponivel_bar * 100000)/(9.81 * carga_densidade_1)
         st.subheader("NPSH = Pabs + Pdin + Palt - Perda carga - Pvapor",anchor=False)
-        st.subheader("NPSH=({:.3f})+({:.3f})+({:.3f})-({:.3f})-({:.3f})".format(abs_bar,dinamica_bar,(altura_entrada_npsh * 9.81 * carga_densidade_1/100000) ,perda_bar,bar_vapor),
+        st.subheader("NPSH=({:.3f})+({:.3f})+({:.3f})-({:.3f})-({:.3f})".format(abs_bar,dinamica_bar,(((press_rt/100000))+altura_entrada_npsh * 9.81 * carga_densidade_1/100000) ,perda_bar,bar_vapor),
                      anchor=False)
         st.subheader("NPSH disponivel {:.2f} Bar ({:.1f}) mcf".format(npsh_disponivel_bar, npsh_disponivel_mcf), anchor=False)
 
