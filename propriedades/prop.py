@@ -945,6 +945,7 @@ if applicativo == "Perda de Carga":
                 carga_densidade = st.number_input("ρ [kg/m³]", min_value=0.000001, step=0.01, format="%.1f",value=999.0)
                 carga_visosidade_ = st.number_input("μ [Cp]", min_value=0.00001, step=0.001, format="%.3f", value=1.01)
                 carga_visosidade = carga_visosidade_ / 1000
+                carga_densidade_1 = carga_densidade
             vazao_npsh = st.number_input("Vazão [m³/h]", min_value=0.00000001, step=0.1, format="%.1f")
 
         with npsh2:
