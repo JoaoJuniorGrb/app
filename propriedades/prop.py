@@ -944,7 +944,7 @@ if applicativo == "Perda de Carga":
                 p_vapor = st.number_input("P. de Vapor [Bar]", min_value=0.000001,step=0.1, format="%.4f")
                 carga_densidade = st.number_input("ρ [kg/m³]", min_value=0.000001, step=0.01, format="%.1f",value=999.0)
                 carga_visosidade_ = st.number_input("μ [Cp]", min_value=0.00001, step=0.001, format="%.3f", value=1.01)
-                carga_visosidade = carga_visosidade_ / 1000
+                carga_visosidade_1 = carga_visosidade_ / 1000
                 carga_densidade_1 = carga_densidade
                 press_rt = st.number_input("Pressão man[bar]", min_value=0.000, value=0.000, step=0.1, format="%.3f")
                 press_rt = press_rt * 100000
@@ -1013,7 +1013,7 @@ if applicativo == "Perda de Carga":
                 p_final = abs_press + press_rt
                 carga_densidade = prop.PropsSI('D', 'T', (temperatura_npsh + 273.15), 'P', p_final , fluido_npsh)
                 carga_densidade_1 = carga_densidade
-                carga_visosidade = prop.PropsSI('VISCOSITY', 'T', (temperatura_npsh + 273.15), 'P', p_final,fluido_npsh)
+                carga_visosidade_1 = prop.PropsSI('VISCOSITY', 'T', (temperatura_npsh + 273.15), 'P', p_final,fluido_npsh)
             # st.title("Min {}".format(min_altitude), anchor=False)
             # st.title("Max {}".format(max_altitude), anchor=False)
             # st.title("Med {}".format(med_altitude), anchor=False)
@@ -1072,12 +1072,13 @@ if applicativo == "Perda de Carga":
                 st.button('Excluir', key=f'remove_{i}', on_click=remove_input, args=(i,))
 
         if dados_fluido == 'Coolprop':
-            carga_densidade = prop.PropsSI('D', 'T', (temperatura_npsh + 273.15), 'P', abs_press, fluido_npsh)
-            carga_visosidade = prop.PropsSI('VISCOSITY', 'T', (temperatura_npsh + 273.15), 'P', abs_press, fluido_npsh)
+            pass
+            #carga_densidade = prop.PropsSI('D', 'T', (temperatura_npsh + 273.15), 'P', abs_press, fluido_npsh)
+            #carga_visosidade = prop.PropsSI('VISCOSITY', 'T', (temperatura_npsh + 273.15), 'P', abs_press, fluido_npsh)
         df_acessorios_usados = pd.DataFrame(st.session_state['inputs'])
         tubo_dict = {'Acessório': 'Tubo', 'Quantidade': comprimento_tubulação, 'perda': 'PVC'}
 
-        reynolds = f_reynolds(carga_densidade, carga_visosidade, velocidade, diametro_int_str)
+        reynolds = f_reynolds(carga_densidade_1, carga_visosidade_1, velocidade, diametro_int_str)
         fator_atrito = f_colebrook(reynolds, diametro_int_str, rugosidade)
 
         # Verifique se o DataFrame não está vazio antes de tentar exibir
@@ -1106,7 +1107,7 @@ if applicativo == "Perda de Carga":
         df_acessorios_usados.loc[indice_tubo, "k"] = 0
         perda_mcf = (df_acessorios_usados["perda [m²/s²]"].sum()) / 9.81
 
-        perda_bar = (df_acessorios_usados["perda [m²/s²]"].sum()) * carga_densidade / 100000
+        perda_bar = (df_acessorios_usados["perda [m²/s²]"].sum()) * carga_densidade_1 / 100000
         # st.table(df_acessorios_usados)
         dinamica_bar = (carga_densidade_1 * (velocidade * velocidade) )/ (2 * 100000)
         npsh_disponivel_bar = abs_bar - bar_vapor - perda_bar + dinamica_bar + ((press_rt/100000) +
@@ -1127,7 +1128,7 @@ if applicativo == "Perda de Carga":
         df_grafico_perda['k'] = None
         df_grafico_perda['Reynolds'] = None
         df_grafico_perda['Reynolds'] = df_grafico_perda["Velocidade m/s"].apply(
-            lambda x: f_reynolds(carga_densidade, carga_visosidade, x, diametro_int_str))
+            lambda x: f_reynolds(carga_densidade_1, carga_visosidade_1, x, diametro_int_str))
         df_grafico_perda['f tubo'] = None
         df_grafico_perda['f tubo'] = df_grafico_perda["Reynolds"].apply(
             lambda x: f_colebrook(x, diametro_int_str, rugosidade))
@@ -1139,11 +1140,11 @@ if applicativo == "Perda de Carga":
             lambda row: perda_acessórios(row['k'], row['Velocidade m/s']), axis=1)
         calcular_perda_de_carga(fator_atrito, comprimento_tubulação, velocidade, diametro_int_str)
         df_grafico_perda['Perda total m²/s²'] = df_grafico_perda['Perda acess m²/s²'] + df_grafico_perda['Perda tubo m²/s²']
-        df_grafico_perda['Perda carga bar'] = (df_grafico_perda['Perda total m²/s²'] * carga_densidade) / 100000
+        df_grafico_perda['Perda carga bar'] = (df_grafico_perda['Perda total m²/s²'] * carga_densidade_1) / 100000
         df_grafico_perda['ABS bar'] = abs_bar
         df_grafico_perda['Pv bar'] = bar_vapor
         df_grafico_perda['P Altura bar'] = altura_entrada_npsh * 9.81 * carga_densidade / 100000
-        df_grafico_perda['P dinamica bar'] = carga_densidade * (df_grafico_perda['Velocidade m/s'] ** 2) / (2 * 100000)
+        df_grafico_perda['P dinamica bar'] = carga_densidade_1 * (df_grafico_perda['Velocidade m/s'] ** 2) / (2 * 100000)
         df_grafico_perda['NPSH Disp. bar'] = df_grafico_perda['ABS bar'] + df_grafico_perda['P Altura bar'] + df_grafico_perda['P dinamica bar'] - df_grafico_perda['Perda carga bar'] - df_grafico_perda['Pv bar']
 
         #st.table(df_grafico_perda)
