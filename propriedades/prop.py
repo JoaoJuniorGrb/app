@@ -1019,7 +1019,7 @@ if applicativo == "Perda de Carga":
             st.subheader("Pressão Abs \n {:.3f} Bar Absoluto \n( {:.2f} mcf )".format(abs_bar, abs_mcf), anchor=False)
             st.subheader("Pressão vapor \n {:.3f} Bar absoluto".format(bar_vapor), anchor=False)
 
-            st.subheader("densidade".format(carga_densidade), anchor=False)
+            st.subheader(carga_densidade, anchor=False)
 
 
         st.header("Acessórios", anchor=False)
