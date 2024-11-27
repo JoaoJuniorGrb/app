@@ -1106,7 +1106,7 @@ if applicativo == "Perda de Carga":
         df_acessorios_usados.loc[indice_tubo, "k"] = 0
         perda_mcf = (df_acessorios_usados["perda [m²/s²]"].sum()) / 9.81
 
-        perda_bar = (df_acessorios_usados["perda [m²/s²]"].sum()) * carga_densidade_1 / 100000
+        perda_bar = (df_acessorios_usados["perda [m²/s²]"].sum()) * carga_densidade / 100000
         # st.table(df_acessorios_usados)
         dinamica_bar = (carga_densidade * (velocidade * velocidade) )/ (2 * 100000)
         npsh_disponivel_bar = abs_bar - bar_vapor - perda_bar + dinamica_bar + ((press_rt/100000) +
