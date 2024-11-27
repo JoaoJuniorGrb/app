@@ -1007,8 +1007,9 @@ if applicativo == "Perda de Carga":
             if dados_fluido == 'Coolprop':
                 p_vapor = PropsSI('P', 'T', (temperatura_npsh + 273.15), 'Q', 1, fluido_npsh)
                 p_vapor = p_vapor / (100000)
-                carga_densidade = prop.PropsSI('D', 'T', (temperatura_npsh + 273.15), 'P', (abs_press + press_rt), fluido_npsh)
-                carga_visosidade = prop.PropsSI('VISCOSITY', 'T', (temperatura_npsh + 273.15), 'P', (abs_press+press_rt),fluido_npsh)
+                p_final = abs_press + press_rt
+                carga_densidade = prop.PropsSI('D', 'T', (temperatura_npsh + 273.15), 'P', p_final , fluido_npsh)
+                carga_visosidade = prop.PropsSI('VISCOSITY', 'T', (temperatura_npsh + 273.15), 'P', p_final,fluido_npsh)
             # st.title("Min {}".format(min_altitude), anchor=False)
             # st.title("Max {}".format(max_altitude), anchor=False)
             # st.title("Med {}".format(med_altitude), anchor=False)
