@@ -938,7 +938,7 @@ if applicativo == "Perda de Carga":
             if dados_fluido == 'Coolprop':
                 fluido_npsh = st.selectbox("Fluido", lista_fluidos, index=93)
                 temperatura_npsh = st.number_input("Temperatura [°C]", min_value=0.1, value=30.0, step=0.1, format="%.1f")
-                press_rt = st.number_input("Pressão man[bar]", min_value=0.001, value=0.000, step=0.100, format="%.3f")
+                press_rt = st.number_input("Pressão man[bar]", min_value=0.000, value=0.000, step=0.1, format="%.3f")
             if dados_fluido == "Outro":
                 p_vapor = st.number_input("P. de Vapor [Bar]", min_value=0.000001,step=0.1, format="%.4f")
                 carga_densidade = st.number_input("ρ [kg/m³]", min_value=0.000001, step=0.01, format="%.1f",value=999.0)
