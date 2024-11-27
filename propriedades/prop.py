@@ -938,7 +938,7 @@ if applicativo == "Perda de Carga":
             if dados_fluido == 'Coolprop':
                 fluido_npsh = st.selectbox("Fluido", lista_fluidos, index=93)
                 temperatura_npsh = st.number_input("Temperatura [°C]", min_value=0.1, value=30.0, step=0.1, format="%.1f")
-
+                press_rt = st.number_input("Pressão man[bar]", min_value=0.001, value=0.0, step=0.1, format="%.2f")
             if dados_fluido == "Outro":
                 p_vapor = st.number_input("P. de Vapor [Bar]", min_value=0.000001,step=0.1, format="%.4f")
                 carga_densidade = st.number_input("ρ [kg/m³]", min_value=0.000001, step=0.01, format="%.1f",value=999.0)
@@ -1006,8 +1006,8 @@ if applicativo == "Perda de Carga":
             if dados_fluido == 'Coolprop':
                 p_vapor = PropsSI('P', 'T', (temperatura_npsh + 273.15), 'Q', 1, fluido_npsh)
                 p_vapor = p_vapor / (100000)
-                carga_densidade = prop.PropsSI('D', 'T', (temperatura_npsh + 273.15), 'P', abs_press, fluido_npsh)
-                carga_visosidade = prop.PropsSI('VISCOSITY', 'T', (temperatura_npsh + 273.15), 'P', abs_press,fluido_npsh)
+                carga_densidade = prop.PropsSI('D', 'T', (temperatura_npsh + 273.15), 'P', (abs_press+press_rt), fluido_npsh)
+                carga_visosidade = prop.PropsSI('VISCOSITY', 'T', (temperatura_npsh + 273.15), 'P', (abs_press+press_rt),fluido_npsh)
             # st.title("Min {}".format(min_altitude), anchor=False)
             # st.title("Max {}".format(max_altitude), anchor=False)
             # st.title("Med {}".format(med_altitude), anchor=False)
