@@ -944,8 +944,7 @@ if applicativo == "Perda de Carga":
                 p_vapor = st.number_input("P. de Vapor [Bar]", min_value=0.000001,step=0.1, format="%.4f")
                 carga_densidade = st.number_input("ρ [kg/m³]", min_value=0.000001, step=0.01, format="%.1f",value=999.0)
                 carga_visosidade_ = st.number_input("μ [Cp]", min_value=0.00001, step=0.001, format="%.3f", value=1.01)
-                carga_visosidade_1 = carga_visosidade_ / 1000
-                carga_densidade_1 = carga_densidade
+                carga_visosidade = carga_visosidade_ / 1000
                 press_rt = st.number_input("Pressão man[bar]", min_value=0.000, value=0.000, step=0.1, format="%.3f")
                 press_rt = press_rt * 100000
             vazao_npsh = st.number_input("Vazão [m³/h]", min_value=0.00000001, step=0.1, format="%.1f")
@@ -1018,11 +1017,11 @@ if applicativo == "Perda de Carga":
             # st.title("Max {}".format(max_altitude), anchor=False)
             # st.title("Med {}".format(med_altitude), anchor=False)
             abs_bar = abs_press / (100000)
-            abs_mcf = (abs_bar * 100000)/(9.81 * carga_densidade_1)
+            abs_mcf = (abs_bar * 100000)/(9.81 * carga_densidade)
             bar_vapor = p_vapor * margem_pv
             st.subheader("Pressão Abs \n {:.3f} Bar Absoluto \n( {:.2f} mcf )".format(abs_bar, abs_mcf), anchor=False)
             st.subheader("Pressão vapor \n {:.3f} Bar absoluto".format(bar_vapor), anchor=False)
-            st.subheader("Densidade \n {:.1f} kg/m³".format(carga_densidade_1), anchor=False)
+            st.subheader("Densidade \n {:.1f} kg/m³".format(carga_densidade), anchor=False)
             
 
 
@@ -1077,7 +1076,7 @@ if applicativo == "Perda de Carga":
         df_acessorios_usados = pd.DataFrame(st.session_state['inputs'])
         tubo_dict = {'Acessório': 'Tubo', 'Quantidade': comprimento_tubulação, 'perda': 'PVC'}
 
-        reynolds = f_reynolds(carga_densidade_1, carga_visosidade_1, velocidade, diametro_int_str)
+        reynolds = f_reynolds(carga_densidade, carga_visosidade, velocidade, diametro_int_str)
         fator_atrito = f_colebrook(reynolds, diametro_int_str, rugosidade)
 
         # Verifique se o DataFrame não está vazio antes de tentar exibir
@@ -1108,12 +1107,12 @@ if applicativo == "Perda de Carga":
 
         perda_bar = (df_acessorios_usados["perda [m²/s²]"].sum()) * carga_densidade_1 / 100000
         # st.table(df_acessorios_usados)
-        dinamica_bar = (carga_densidade_1 * (velocidade * velocidade) )/ (2 * 100000)
+        dinamica_bar = (carga_densidade * (velocidade * velocidade) )/ (2 * 100000)
         npsh_disponivel_bar = abs_bar - bar_vapor - perda_bar + dinamica_bar + ((press_rt/100000) +
-        (altura_entrada_npsh * 9.81 * carga_densidade_1 / 100000))
-        npsh_disponivel_mcf = (npsh_disponivel_bar * 100000)/(9.81 * carga_densidade_1)
+        (altura_entrada_npsh * 9.81 * carga_densidade / 100000))
+        npsh_disponivel_mcf = (npsh_disponivel_bar * 100000)/(9.81 * carga_densidade)
         st.subheader("NPSH = Pabs + Pdin + Palt - Perda carga - Pvapor",anchor=False)
-        st.subheader("NPSH=({:.3f})+({:.3f})+({:.3f})-({:.3f})-({:.3f})".format(abs_bar,dinamica_bar,(((press_rt/100000))+altura_entrada_npsh * 9.81 * carga_densidade_1/100000) ,perda_bar,bar_vapor),
+        st.subheader("NPSH=({:.3f})+({:.3f})+({:.3f})-({:.3f})-({:.3f})".format(abs_bar,dinamica_bar,(((press_rt/100000))+altura_entrada_npsh * 9.81 * carga_densidade/100000) ,perda_bar,bar_vapor),
                      anchor=False)
         st.subheader("NPSH disponivel {:.2f} Bar ({:.1f}) mcf".format(npsh_disponivel_bar, npsh_disponivel_mcf), anchor=False)
 
@@ -1127,7 +1126,7 @@ if applicativo == "Perda de Carga":
         df_grafico_perda['k'] = None
         df_grafico_perda['Reynolds'] = None
         df_grafico_perda['Reynolds'] = df_grafico_perda["Velocidade m/s"].apply(
-            lambda x: f_reynolds(carga_densidade_1, carga_visosidade_1, x, diametro_int_str))
+            lambda x: f_reynolds(carga_densidade, carga_visosidade, x, diametro_int_str))
         df_grafico_perda['f tubo'] = None
         df_grafico_perda['f tubo'] = df_grafico_perda["Reynolds"].apply(
             lambda x: f_colebrook(x, diametro_int_str, rugosidade))
@@ -1139,11 +1138,11 @@ if applicativo == "Perda de Carga":
             lambda row: perda_acessórios(row['k'], row['Velocidade m/s']), axis=1)
         calcular_perda_de_carga(fator_atrito, comprimento_tubulação, velocidade, diametro_int_str)
         df_grafico_perda['Perda total m²/s²'] = df_grafico_perda['Perda acess m²/s²'] + df_grafico_perda['Perda tubo m²/s²']
-        df_grafico_perda['Perda carga bar'] = (df_grafico_perda['Perda total m²/s²'] * carga_densidade_1) / 100000
+        df_grafico_perda['Perda carga bar'] = (df_grafico_perda['Perda total m²/s²'] * carga_densidade) / 100000
         df_grafico_perda['ABS bar'] = abs_bar
         df_grafico_perda['Pv bar'] = bar_vapor
         df_grafico_perda['P Altura bar'] = altura_entrada_npsh * 9.81 * carga_densidade / 100000
-        df_grafico_perda['P dinamica bar'] = carga_densidade_1 * (df_grafico_perda['Velocidade m/s'] ** 2) / (2 * 100000)
+        df_grafico_perda['P dinamica bar'] = carga_densidade * (df_grafico_perda['Velocidade m/s'] ** 2) / (2 * 100000)
         df_grafico_perda['NPSH Disp. bar'] = df_grafico_perda['ABS bar'] + df_grafico_perda['P Altura bar'] + df_grafico_perda['P dinamica bar'] - df_grafico_perda['Perda carga bar'] - df_grafico_perda['Pv bar']
 
         #st.table(df_grafico_perda)
