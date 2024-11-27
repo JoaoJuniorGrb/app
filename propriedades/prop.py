@@ -1105,7 +1105,7 @@ if applicativo == "Perda de Carga":
         perda_bar = (df_acessorios_usados["perda [m²/s²]"].sum()) * carga_densidade / 100000
         # st.table(df_acessorios_usados)
         dinamica_bar = (carga_densidade * (velocidade * velocidade) )/ (2 * 100000)
-        npsh_disponivel_bar = abs_press - bar_vapor - perda_bar + dinamica_bar + (
+        npsh_disponivel_bar = abs_bar - bar_vapor - perda_bar + dinamica_bar + (
         altura_entrada_npsh * 9.81 * carga_densidade / 100000)
         npsh_disponivel_mcf = (npsh_disponivel_bar * 100000)/(9.81 * carga_densidade)
         st.subheader("NPSH = Pabs + Pdin + Palt - Perda carga - Pvapor",anchor=False)
