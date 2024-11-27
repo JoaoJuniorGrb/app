@@ -1018,8 +1018,8 @@ if applicativo == "Perda de Carga":
             bar_vapor = p_vapor * margem_pv
             st.subheader("Pressão Abs \n {:.3f} Bar Absoluto \n( {:.2f} mcf )".format(abs_bar, abs_mcf), anchor=False)
             st.subheader("Pressão vapor \n {:.3f} Bar absoluto".format(bar_vapor), anchor=False)
-
-            st.subheader(carga_densidade, anchor=False)
+            st.subheader("Densidade \n {:.1f} Bar absoluto".format(carga_densidade), anchor=False)
+            
 
 
         st.header("Acessórios", anchor=False)
