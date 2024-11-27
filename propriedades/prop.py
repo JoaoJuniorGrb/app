@@ -1072,9 +1072,8 @@ if applicativo == "Perda de Carga":
                 st.button('Excluir', key=f'remove_{i}', on_click=remove_input, args=(i,))
 
         if dados_fluido == 'Coolprop':
-            pass
-            #carga_densidade = prop.PropsSI('D', 'T', (temperatura_npsh + 273.15), 'P', abs_press, fluido_npsh)
-            #carga_visosidade = prop.PropsSI('VISCOSITY', 'T', (temperatura_npsh + 273.15), 'P', abs_press, fluido_npsh)
+            carga_densidade = prop.PropsSI('D', 'T', (temperatura_npsh + 273.15), 'P', p_final, fluido_npsh)
+            carga_visosidade = prop.PropsSI('VISCOSITY', 'T', (temperatura_npsh + 273.15), 'P', p_final, fluido_npsh)
         df_acessorios_usados = pd.DataFrame(st.session_state['inputs'])
         tubo_dict = {'Acessório': 'Tubo', 'Quantidade': comprimento_tubulação, 'perda': 'PVC'}
 
