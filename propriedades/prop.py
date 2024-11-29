@@ -1568,7 +1568,7 @@ if applicativo == "Sistemas de controle":
 if applicativo == 'Equações de afinidade':
     from scipy.interpolate import interp1d
     # Exibe a imagem com a classe CSS para centralizar
-    st.warning('Este recuro utiliza as relações de afinidade para EXTRAPOLAÇÃO de grandezas, esta relaçoes teoricas não refletem com precisao o comportamento real de operaçao de motobombas', icon="⚠️")
+    st.warning('Este recuro utiliza as relações de afinidade para EXTRAPOLAÇÃO de grandezas, estas relaçoes teoricas não refletem com precisao o comportamento real de operaçao de motobombas', icon="⚠️")
     afin_1, afin_2, afin_3 = st.columns(3)
 
     with afin_1:
