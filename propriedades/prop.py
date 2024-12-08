@@ -1204,7 +1204,9 @@ if applicativo == "Base Instalada":
     file_path_cargil = "levantamento cargil/resultado_final_cargil.json"
     resultado_final = load_(file_path_cargil).decode('utf-8')
     isolutions = load_(file_path_isolutions).decode('utf-8')
-
+    file_path_custo_inversor = "isolutions/inversor_potencia.xlsx"
+    custo_inversor = load_(file_path_custo_inversor)
+    
     if authentication_status:
         
         nome= name
@@ -1222,6 +1224,7 @@ if applicativo == "Base Instalada":
 
         df_original = pd.read_json(resultado_final)
         df_isoltutions = pd.read_json(isolutions)
+        df_custoinversores = pd.read_excel(custo_inversor)
         #st.dataframe(df_original)
 
         levantamento = st.selectbox('Levantamento', ('Base instalada Cargil', 'Isolutions Grundfos'))
@@ -1280,6 +1283,12 @@ if applicativo == "Base Instalada":
         
         
         if levantamento == 'Isolutions Grundfos':
+            #tratamento
+            #------------------------------------
+            df_isoltutions.loc[df_isoltutions['Documento'] == 'NFF-178362','QTD TOTAL'] = 2
+            df_isoltutions.loc[df_isoltutions['Documento'] == 'NFF-155977','POT TOT INVERSORES'] = 0
+            df_isoltutions.loc[df_isoltutions['Documento'] == 'NFF-146948','POT TOT INVERSORES'] = 0
+            #------------------------------------
             df_isoltutions['POT KW UNIT VALOR'] = df_isoltutions['POT KW UNIT'].astype(float).round(2)
             df_isoltutions['POT KW UNIT'] = df_isoltutions['POT KW UNIT'].astype(float).round(1)
             df_isoltutions['POT TOTAL BOMBAS'] = df_isoltutions['POT TOTAL BOMBAS'].astype(float).round(1)
@@ -1287,13 +1296,13 @@ if applicativo == "Base Instalada":
             inversores_marca_isolutions = sorted(df_isoltutions['MARCA'].unique())
             inversores_ano_isolutions = sorted(df_isoltutions['Ano'].unique())
             inversores_pot_isolutions = sorted(df_isoltutions['POT KW UNIT'].unique())
-            with isol1:
+            with isol2:
                 marca_isolutions = st.multiselect('Marcas', inversores_marca_isolutions, inversores_marca_isolutions)
                 inicio_ano, final_ano = st.select_slider('Período',
                                                          options=['2017', '2018', '2019', '2020', '2021', '2022',
                                                                   '2023', '2024'], value=('2017', '2024'))
 
-            with isol2:
+            with isol1:
                 df_modelo = df_isoltutions[df_isoltutions['MARCA'].isin(marca_isolutions)]
                 modelos = df_modelo["MODELO"].unique()
                 pot = df_modelo["POT KW UNIT"].unique()
@@ -1305,12 +1314,19 @@ if applicativo == "Base Instalada":
             # Criar uma nova coluna com o produto de 'QTD SKID' e 'QTD INV'
             df_isoltutions_filtrado['QTD TOTAL'] = df_isoltutions_filtrado['QTD SKID'] * df_isoltutions_filtrado['QTD INV']
             #grafico_inversores = px.bar(df_isoltutions_filtrado['QTD INV']*df_isoltutions_filtrado['MODELO'].counts, y='Quantidade', x=pot)
-
+            
             # Criar uma nova coluna com a contagem de modelos multiplicada pela quantidade de inversores
             df_grafico_inv = df_isoltutions_filtrado.groupby(['MODELO', 'POT KW UNIT','POT KW UNIT VALOR']).agg({'QTD TOTAL': 'sum'}).reset_index()
+            
+            #st.text(df_isoltutions_filtrado.columns.tolist())
+            # Ordenar por 'QTD TOTAL' em ordem decrescente
+            df_grafico_inv = df_grafico_inv.sort_values(by='QTD TOTAL', ascending=False)
+
+            # Garantir que 'POT KW UNIT' siga a ordem categorizada
+            df_grafico_inv['POT KW UNIT'] = pd.Categorical(df_grafico_inv['POT KW UNIT'],categories=df_grafico_inv.sort_values(by='QTD TOTAL', ascending=False)['POT KW UNIT'].unique(),ordered=True)
             df_grafico_inv['POT KW UNIT'] = df_grafico_inv['POT KW UNIT'].astype(str) + "kW"
             
-            df_grafico_inv = df_grafico_inv.sort_values(by='POT KW UNIT VALOR', ascending=True)
+            df_grafico_inv = df_grafico_inv.sort_values(by='POT KW UNIT VALOR', ascending=False)
             #st.dataframe(df_grafico_inv)
 
             
@@ -1358,8 +1374,38 @@ if applicativo == "Base Instalada":
                 st.plotly_chart(grafico_inversores, use_container_width=True)
             with isol4:
                 st.plotly_chart(inversores_ano, use_container_width=True)
-            st.dataframe(df_isoltutions_filtrado)
+            
+            df_isoltutions_filtrado = df_isoltutions_filtrado[['CODIGOFINAL','Documento','Data','Cliente','Vendedor','Produto','Valor Unitário','Valor Total','NOMECOMPOS','MARCA','MODELO','POT KW UNIT VALOR','POT TOT INVERSORES','QTD TOTAL']]
+            df_isoltutions_filtrado = df_isoltutions_filtrado.rename(columns={
+                    'CODIGOFINAL': "Cod. FAI",
+                    'Documento':"N° Documento",
+                    'Produto':'Descrição Sitema',
+                    'NOMECOMPOS':'Desc. Inversor',
+                    'MARCA':'Marca',
+                    'MODELO':'Modelo',
+                    'POT KW UNIT VALOR':'Pot. unitária kW',
+                    'POT TOT INVERSORES':"Total Inversores kW",
+                    'QTD TOTAL':"Un. Inversores"
 
+            })
+            st.dataframe(df_isoltutions_filtrado,hide_index=True)
+
+            df_custoinversores['Grundfos'] = pd.to_numeric(df_custoinversores['Grundfos'], errors='coerce')
+            df_custoinversores['Siemens'] = pd.to_numeric(df_custoinversores['Siemens'], errors='coerce')
+            # Arredondar apenas colunas específicas
+            df_custoinversores['Grundfos'] = df_custoinversores['Grundfos'].round(0)
+            df_custoinversores['Siemens'] = df_custoinversores['Siemens'].round(0)
+            # Gerar o gráfico de barras com múltiplas colunas
+            inversores_pot_custo = px.bar(
+                df_custoinversores,
+                x="Potência",  # Eixo X
+                y=["Grundfos", "Siemens"],  # Duas colunas para o eixo Y
+                title="Comparação de Valores de Venda (MK=1.8 s/ IPI)",
+                labels={"value": "R$", "variable": "Marca"},  # Ajustar os rótulos
+                barmode="group",  # Barras lado a lado
+                color_discrete_map = color_
+            )
+            st.plotly_chart(inversores_pot_custo, use_container_width=True)
     elif authentication_status == False:
         st.error('Nome de usuário ou senha incorretos')
     elif authentication_status == None:
