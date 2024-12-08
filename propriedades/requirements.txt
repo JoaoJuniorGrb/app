@@ -123,3 +123,4 @@ firebase-admin==6.5.0
 datetime
 streamlit-autorefresh==1.0.1
 control==0.9.0
+openpyxl
