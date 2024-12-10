@@ -1204,7 +1204,7 @@ if applicativo == "Base Instalada":
     file_path_cargil = "levantamento cargil/resultado_final_cargil.json"
     resultado_final = load_(file_path_cargil).decode('utf-8')
     isolutions = load_(file_path_isolutions).decode('utf-8')
-    file_path_custo_inversor = "isolutions/inversor_potencia.xlsx"
+    file_path_custo_inversor = "isolutions/inversor_potencia-1.xlsx"
     custo_inversor = load_(file_path_custo_inversor)
     
     if authentication_status:
