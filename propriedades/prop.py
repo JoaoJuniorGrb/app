@@ -1792,6 +1792,7 @@ if applicativo == 'Gestão de projetos':
         df_projetos["prazo"] = df_projetos["data agenda"].apply(lambda x: max((x.replace(tzinfo=None) - data_atual.replace(tzinfo=None)).days, 0) if pd.notnull(x) else 0)
         maior_prazo = int(df_projetos["prazo"].max())
         df_projetos = df_projetos[["FAI","prazo",'pendente',"data agenda",'realizado',"cliente","nome","status","data inicio",'data mod']]
+        df_projetos = df_projetos.sort_values(by="data agenda")
         if not concluidos_fai:
             df_projetos = df_projetos[df_projetos['status'] == False]
         df_projetos_editado = st.data_editor(df_projetos,column_config={"data inicio": st.column_config.DateColumn("Data de Início",format="DD/MM/YYYY"),
