@@ -100,6 +100,10 @@ if name == "Joao Hering Ferreira":
     programas = ["Perda de Carga",'Equações de afinidade',"Propriedades Termodinâmicas","Placa de orificio","QHS","Sistemas de controle","Final", "Base Instalada","Localização de Pedidos",'Gestão de projetos']
     legendas1 = ["Cálculo de perda de carga",'Em desenvolvimento',"Fornece gráfico de propriedades termodinamicas selecionadas",'Em desenvolvimento','Em desenvolvimento','Em desenvolvimento',"Informações sobre o programa","Levantamentos","Localização de pedidos a partir da O.V. com acesso a historico de alterções","Informações sobre Projetos"]
 
+if name == "Marcos Kuchenbecker":
+    programas = ["Base Instalada"]
+    legendas1 = ["Levantamentos"]
+
 
 st.sidebar.header("Selecione o programa desejado")
 applicativo = st.sidebar.radio("Seleção",programas)
