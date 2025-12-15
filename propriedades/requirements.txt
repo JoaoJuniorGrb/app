@@ -124,3 +124,7 @@ datetime
 streamlit-autorefresh==1.0.1
 control==0.9.0
 openpyxl
+qrcode==8.2
+qrcode-artistic==3.0.2
+
+
