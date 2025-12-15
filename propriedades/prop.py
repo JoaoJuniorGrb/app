@@ -86,12 +86,12 @@ name, authentication_status, username = authenticator.login('Login', 'sidebar')
 
 #Inicial
 if authentication_status:
-    programas = ["Perda de Carga",'Equações de afinidade',"Propriedades Termodinâmicas","Placa de orificio","QHS","Sistemas de controle","Final", "Base Instalada",'Gestão de projetos']
-    legendas1 = ["Cálculo de perda de carga",'Em desenvolvimento',"Fornece gráfico de propriedades termodinamicas selecionadas",'Em desenvolvimento','Em desenvolvimento','Em desenvolvimento',"Informações sobre o programa","Levantamentos","Informações sobre Projetos"]
+    programas = ["Perda de Carga",'Equações de afinidade',"Propriedades Termodinâmicas","Placa de orificio","QHS","Sistemas de controle","Final", "Base Instalada",'Gestão de projetos',"Gerar QR"]
+    legendas1 = ["Cálculo de perda de carga",'Em desenvolvimento',"Fornece gráfico de propriedades termodinamicas selecionadas",'Em desenvolvimento','Em desenvolvimento','Em desenvolvimento',"Informações sobre o programa","Levantamentos",'QR',"Informações sobre Projetos"]
 if not authentication_status:
-    programas = ["Perda de Carga",'Equações de afinidade', "Propriedades Termodinâmicas",  "QHS","Sistemas de controle", "Final"]
+    programas = ["Perda de Carga",'Equações de afinidade', "Propriedades Termodinâmicas",  "QHS","Sistemas de controle","Gerar QR", "Final"]
     legendas1 = ["Cálculo de perda de carga",'Em desenvolvimento', "Fornece gráfico de propriedades termodinamicas selecionadas",
-                  'Em desenvolvimento','Em desenvolvimento', "Informações sobre o programa"]
+                  'Em desenvolvimento','Em desenvolvimento','QR', "Informações sobre o programa"]
 if name == "Fellipe Gebien":
     programas = ["Localização de Pedidos"]
     legendas1 = ["Localização de pedidos a partir da O.V. com acesso a historico de alterções"]
@@ -1688,6 +1688,52 @@ if applicativo == 'Equações de afinidade':
         st.plotly_chart(curva_bomba, use_container_width=True,key="curva")
         st.plotly_chart(curva_potencia, use_container_width=True,curva="potencia")
 
+if applicativo == 'Gerar QR':
+    import qrcode
+    from PIL import Image
+    from qrcode.image.styledpil import StyledPilImage
+    from qrcode.image.styles.moduledrawers.pil import CircleModuleDrawer
+    from qrcode.image.styles.colormasks import RadialGradiantColorMask
+
+    body = "Geração de QR Code"
+    st.title(body, anchor=None)
+    form_col_1, form_col_2 = st.columns([0.4, 0.1])
+    with form_col_1:
+        link = st.text_area("Insira o link aqui")
+        st.write(f"{len(link)} caracteres.")
+    with form_col_2:
+        gerar_qr = st.button("Gerar QR", type="primary")
+        if gerar_qr:
+
+            # Cria QR Code
+            qr = qrcode.QRCode(
+                version=1,
+                error_correction=qrcode.constants.ERROR_CORRECT_H,
+                box_size=15,
+                border=2,
+            )
+
+            qr.add_data(link)
+            qr.make(fit=True)
+
+            img = qr.make_image(
+                image_factory=StyledPilImage,
+                module_drawer=CircleModuleDrawer(),
+                color_mask=RadialGradiantColorMask(
+                    back_color=(255,255,255),
+                    edge_color=(11,84,160),
+                    center_color=(11,84,160)
+                ),
+                fill_color="#0B54A0",
+                back_color="white").convert("RGBA")
+            if img:
+                st.success("Gerando Link", icon=None)
+            #img.save("qr_bolinhas_logo.png")
+            #img.show()
+
+    if gerar_qr:
+            st.image(img, caption=link)
+
 if applicativo == 'Gestão de projetos':
         # Divisor personalizado com degradê de amarelo para azul
         nome= name
@@ -1856,4 +1902,5 @@ if applicativo == 'Gestão de projetos':
             with st.spinner("Atualizando dados..."):
                 st_autorefresh(interval=5000, limit=15, key="firebase_update")
             
+
 
