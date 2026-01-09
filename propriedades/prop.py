@@ -32,7 +32,7 @@ url_imagem = "propriedades/03.FIEDLER_marca principal_positiva_fundo_claro.png"
 st.set_page_config(page_title="Fiedler Automação", page_icon="propriedades/03.FIEDLER_logo.png", layout="wide")
 
 st.sidebar.markdown(
-    f"<img src='{url_imagem}' ",
+    f"<img src='{url_imagem}'/> ",
     unsafe_allow_html=True
 )
 #remove estilo stream lit
@@ -1902,6 +1902,7 @@ if applicativo == 'Gestão de projetos':
             with st.spinner("Atualizando dados..."):
                 st_autorefresh(interval=5000, limit=15, key="firebase_update")
             
+
 
 
 
