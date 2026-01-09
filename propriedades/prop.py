@@ -27,14 +27,13 @@ import json
 import control as ctrl
 import plotly.graph_objects as go
 
-url_imagem = "propriedades/03.FIEDLER_marca principal_positiva_fundo_claro.png"
+
 # Esconde o cabeçalho e o rodapé padrão do Streamlit
 st.set_page_config(page_title="Fiedler Automação", page_icon="propriedades/03.FIEDLER_logo.png", layout="wide")
 
-st.sidebar.markdown(
-    f"<img src='{url_imagem}'/> ",
-    unsafe_allow_html=True
-)
+img = Image.open("propriedades/03.FIEDLER_marca principal_positiva_fundo_claro.png")
+st.sidebar.image(img, use_container_width=True)
+
 #remove estilo stream lit
 remove_st_estilo = """
     <style>
@@ -1902,6 +1901,7 @@ if applicativo == 'Gestão de projetos':
             with st.spinner("Atualizando dados..."):
                 st_autorefresh(interval=5000, limit=15, key="firebase_update")
             
+
 
 
 
