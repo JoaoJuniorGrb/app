@@ -143,11 +143,11 @@ if applicativo == "Propriedades Termodinâmicas":
             st.header("Fluido",anchor=False)
             fluido_selecionado = st.selectbox("Fluido", lista_fluidos, index=93)
         with col2:
-            st.header("Pressão",anchor=False)
-            pressao = st.number_input("Digite a pressão", min_value=0.1,step=0.1,format="%.1f")
+            st.header("Pressão Absoluta",anchor=False)
+            pressao = st.number_input("Manometrica + Atm", min_value=0.1,step=0.1,format="%.1f")
         with col3:
             st.header("Un.",anchor=False)
-            un_pressão = st.selectbox("Un",["Bar","Pa"],index=1)
+            un_pressão = st.selectbox("Un",["Bar","Pa"],index=0)
         with col4:
             st.header("Temp.",anchor=False)
             temperatura = st.number_input("Digite a temperatura", min_value=0.1,step=0.1,format="%.1f")
@@ -1902,6 +1902,7 @@ if applicativo == 'Gestão de projetos':
             with st.spinner("Atualizando dados..."):
                 st_autorefresh(interval=5000, limit=15, key="firebase_update")
             
+
 
 
 
