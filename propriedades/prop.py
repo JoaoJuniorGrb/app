@@ -29,7 +29,7 @@ import plotly.graph_objects as go
 
 url_imagem = "https://i0.wp.com/cdn.newspulpaper.com/wp-content/uploads/2024/06/05163805/Submarca-Fiedler-01.png?resize=1068%2C373&ssl=1"
 # Esconde o cabeçalho e o rodapé padrão do Streamlit
-st.set_page_config(page_title="Fiedler Automação", page_icon="https://github.com/JoaoJuniorGrb/app/blob/6fa457063504b593f98cf56b504e1446af1318f5/propriedades/03.FIEDLER_logo.png", layout="wide")
+st.set_page_config(page_title="Fiedler Automação", page_icon="propriedades/03.FIEDLER_logo.png", layout="wide")
 
 st.sidebar.markdown(
     f"<img src='{url_imagem}' style='width:200px;'/>",
@@ -1902,6 +1902,7 @@ if applicativo == 'Gestão de projetos':
             with st.spinner("Atualizando dados..."):
                 st_autorefresh(interval=5000, limit=15, key="firebase_update")
             
+
 
 
 
